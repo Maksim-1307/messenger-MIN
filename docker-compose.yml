@@ -51,7 +51,7 @@ services:
       PORT: ${BACKEND_PORT}
       NODE_ENV: production
       DB_HOST: postgres
-      DB_PORT: ${POSTGRES_PORT}
+      DB_PORT: ${DB_INTERNAL_PORT}
       DB_USER: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       DB_NAME: ${POSTGRES_DB}
@@ -87,7 +87,7 @@ services:
       PORT: ${BACKEND_PORT}
       NODE_ENV: development
       DB_HOST: postgres
-      DB_PORT: ${POSTGRES_PORT}
+      DB_PORT: ${DB_INTERNAL_PORT}
       DB_USER: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       DB_NAME: ${POSTGRES_DB}
@@ -107,7 +107,6 @@ services:
     volumes:
       - min_backend_uploads:/app/uploads
       - ./backend/src:/app/src
-      - /app/node_modules
 
   frontend-prod:
     profiles:

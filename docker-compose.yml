@@ -1,18 +1,16 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: postgres-container
+    container_name: min-postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-    ports:
-      - "${POSTGRES_PORT}:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - min_postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
     networks:
-      - app-network
+      - min-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       timeout: 30s
@@ -28,16 +26,14 @@ services:
           memory: 256M
 
   redis:
-    image: redis:latest
-    container_name: redis
+    image: redis:7-alpine
+    container_name: min-redis
     restart: unless-stopped
-    ports:
-      - "127.0.0.1:6379:6379"
-    command: redis-server --appendonly yes
+    command: redis-server --appendonly yes --port ${REDIS_PORT}
     volumes:
-      - redis_data:/data
+      - min_redis_data:/data
     networks:
-      - app-network
+      - min-network
  
   backend-prod:
     profiles:
@@ -50,7 +46,7 @@ services:
     ports:
       - "${BACKEND_PORT}:5001"
     env_file:
-      - .env
+      - .env.secret
     environment:
       PORT: ${BACKEND_PORT}
       NODE_ENV: production
@@ -69,11 +65,11 @@ services:
         condition: service_started
     restart: unless-stopped
     networks:
-      app-network:
+      min-network:
         aliases:
           - backend
     volumes:
-      - backend_uploads:/app/uploads
+      - min_backend_uploads:/app/uploads
   
   backend-dev:
     profiles:
@@ -86,7 +82,7 @@ services:
     ports:
       - "${BACKEND_PORT}:5001"
     env_file:
-      - .env
+      - .env.secret
     environment:
       PORT: ${BACKEND_PORT}
       NODE_ENV: development
@@ -105,11 +101,11 @@ services:
         condition: service_started
     restart: unless-stopped
     networks:
-      app-network:
+      min-network:
         aliases:
           - backend
     volumes:
-      - backend_uploads:/app/uploads
+      - min_backend_uploads:/app/uploads
       - ./backend/src:/app/src
       - /app/node_modules
 
@@ -130,7 +126,7 @@ services:
       API_URL: ${API_URL}
       SOCKET_URL: ${SOCKET_URL}
     networks:
-      - app-network
+      - min-network
     restart: unless-stopped
 
   frontend-dev:
@@ -151,17 +147,17 @@ services:
       VITE_API_URL: ${VITE_API_URL}
       VITE_SOCKET_URL: ${VITE_SOCKET_URL}
     networks:
-      - app-network
+      - min-network
     volumes:
       - ./frontend:/app
       - /app/node_modules
     restart: unless-stopped
 
 volumes:
-  postgres_data:
-  redis_data:
-  backend_uploads:
+  min_postgres_data:
+  min_redis_data:
+  min_backend_uploads:
 
 networks:
-  app-network:
+  min-network:
     driver: bridge

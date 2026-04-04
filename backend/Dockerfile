@@ -9,6 +9,12 @@ RUN npm ci
 FROM deps AS development
 WORKDIR /app
 COPY . .
+ARG NODE_ENV
+ENV NODE_ENV=$NODE_ENV
+ARG JWT_SECRET
+ENV JWT_SECRET=$JWT_SECRET
+ARG BACKEND_PORT
+ENV BACKEND_PORT=$BACKEND_PORT
 CMD ["npx", "tsx", "watch", "src/index.ts"]
 
 # 3. build ts into js
@@ -32,6 +38,13 @@ USER node
 COPY --from=build --chown=node:node /app/node_modules ./node_modules 
 COPY --from=build --chown=node:node /app/dist ./dist
 COPY --from=build --chown=node:node /app/package.json ./package.json
+
+ARG NODE_ENV
+ENV NODE_ENV=$NODE_ENV
+ARG JWT_SECRET
+ENV JWT_SECRET=$JWT_SECRET
+ARG BACKEND_PORT
+ENV BACKEND_PORT=$BACKEND_PORT
 
 # static files
 # COPY --from=build --chown=node:node /app/public ./public 

@@ -1,14 +1,8 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { db_addUserIf, db_getUserByUsernameIf, db_isAdmin } from '../utils/database.js';
+import { config } from '../utils/config.js';
 import type { User, JWTPayload, LoginResponse, RegisterResult } from '../types/auth.js';
-
-const JWT_SECRET = process.env.JWT_SECRET;
-
-if (!JWT_SECRET) {
-  console.error('ERROR: JWT_SECRET is not defined in environment variables');
-  process.exit(1);
-}
 
 export class AuthError extends Error {
   constructor(
@@ -64,7 +58,7 @@ export const login = async (username: string, password: string): Promise<LoginRe
     userRole: isAdmin ? 'admin' : 'visitor',
   };
   
-  const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' });
+  const token = jwt.sign(payload, config.jwt.secret, { expiresIn: '1h' });
   
   return {
     token,

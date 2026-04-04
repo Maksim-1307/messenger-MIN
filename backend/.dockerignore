@@ -10,3 +10,4 @@ dist
 README.md
 Dockerfile
 .dockerignore
+.DS_Store

@@ -2,6 +2,8 @@ import express, { type Request, type Response } from 'express';
 import { register, login } from './controllers/authController.js';
 import { AuthError } from './services/authService.js';
 import { authenticate, requireAdmin } from './middleware/auth.js';
+import { avatarUpload, setFilePermissions } from './middleware/upload.js';
+import { uploadAvatar, removeAvatar, getAvatar } from './controllers/avatarController.js';
 
 const app = express();
 
@@ -29,13 +31,23 @@ app.get('/', (req: Request, res: Response) => {
       login: 'POST /api/auth/login',
       me: 'GET /api/users/me (requires auth)',
       admin: 'GET /api/admin/stats (requires admin)',
+      uploadAvatar: 'POST /api/users/avatar (requires auth)',
+      removeAvatar: 'DELETE /api/users/avatar (requires auth)',
+      getAvatar: 'GET /api/public/avatars/:filename (public)',
     },
   });
 });
 
 // Auth routes (public)
-app.post('/api/auth/register', register);
+app.post('/api/auth/register', avatarUpload.single('avatar'), setFilePermissions, register);
 app.post('/api/auth/login', login);
+
+// Avatar routes
+app.post('/api/users/avatar', authenticate, avatarUpload.single('avatar'), setFilePermissions, uploadAvatar);
+app.delete('/api/users/avatar', authenticate, removeAvatar);
+
+// Public: serve avatars
+app.get('/api/public/avatars/:filename', getAvatar);
 
 // Protected routes (requires valid JWT)
 app.get('/api/users/me', authenticate, (req: Request, res: Response) => {
@@ -68,6 +80,10 @@ app.post('/api/echo', (req: Request, res: Response) => {
 
 // Error handler
 app.use((err: Error, req: Request, res: Response, next: Function) => {
+  if (err.message === 'Unexpected field' || err.message?.includes('file size') || err.message?.includes('Invalid file')) {
+    res.status(400).json({ message: err.message });
+    return;
+  }
   if (err instanceof AuthError) {
     res.status(err.statusCode).json({ message: err.message });
     return;

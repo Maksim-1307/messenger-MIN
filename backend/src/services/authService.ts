@@ -22,6 +22,10 @@ const validateCredentials = (username: string, password: string): void => {
   }
 };
 
+export const getUserByUsername = async (username: string) => {
+  return userRepository.findByUsername(username);
+};
+
 export const register = async (username: string, password: string): Promise<RegisterResult> => {
   validateCredentials(username, password);
 

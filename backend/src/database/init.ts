@@ -53,13 +53,42 @@ export async function initializeDatabase(): Promise<void> {
       CREATE TABLE IF NOT EXISTS user_profiles (
         id SERIAL PRIMARY KEY,
         user_id INTEGER UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        email VARCHAR(255) UNIQUE NOT NULL,
+        email VARCHAR(255) UNIQUE,
         description TEXT,
+        avatar_path VARCHAR(500),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
     console.log('User profiles table initialized');
+
+    // Add avatar_path column if it doesn't exist
+    await db.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'user_profiles' AND column_name = 'avatar_path'
+        ) THEN
+          ALTER TABLE user_profiles ADD COLUMN avatar_path VARCHAR(500);
+        END IF;
+      END $$;
+    `);
+    console.log('User profiles avatar_path column ensured');
+
+    // Make email nullable if it was previously NOT NULL
+    await db.query(`
+      DO $$
+      BEGIN
+        IF EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'user_profiles' AND column_name = 'email' AND is_nullable = 'NO'
+        ) THEN
+          ALTER TABLE user_profiles ALTER COLUMN email DROP NOT NULL;
+        END IF;
+      END $$;
+    `);
+    console.log('User profiles email column made nullable');
 
     // Create index for faster queries
     await db.query(`

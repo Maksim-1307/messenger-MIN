@@ -1,13 +1,17 @@
 import express, { type Request, type Response } from 'express';
+import cors from 'cors';
 import { register, login } from './controllers/authController.js';
 import { AuthError } from './services/authService.js';
 import { authenticate, requireAdmin } from './middleware/auth.js';
 import { avatarUpload, setFilePermissions } from './middleware/upload.js';
 import { uploadAvatar, removeAvatar, getAvatar } from './controllers/avatarController.js';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './utils/swagger.js';
 
 const app = express();
 
 // Middleware
+app.use(cors()); // Allow all origins
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -77,6 +81,9 @@ app.post('/api/echo', (req: Request, res: Response) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+// Swagger documentation
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Error handler
 app.use((err: Error, req: Request, res: Response, next: Function) => {

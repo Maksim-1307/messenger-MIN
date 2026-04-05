@@ -1,6 +1,7 @@
 import express, { type Request, type Response } from 'express';
 import { register, login } from './controllers/authController.js';
 import { AuthError } from './services/authService.js';
+import { authenticate, requireAdmin } from './middleware/auth.js';
 
 const app = express();
 
@@ -26,13 +27,35 @@ app.get('/', (req: Request, res: Response) => {
       health: 'GET /health',
       register: 'POST /api/auth/register',
       login: 'POST /api/auth/login',
+      me: 'GET /api/users/me (requires auth)',
+      admin: 'GET /api/admin/stats (requires admin)',
     },
   });
 });
 
-// Auth routes
+// Auth routes (public)
 app.post('/api/auth/register', register);
 app.post('/api/auth/login', login);
+
+// Protected routes (requires valid JWT)
+app.get('/api/users/me', authenticate, (req: Request, res: Response) => {
+  res.status(200).json({
+    message: 'Current user',
+    user: req.user,
+  });
+});
+
+// Admin-only routes
+app.get('/api/admin/stats', authenticate, requireAdmin, (req: Request, res: Response) => {
+  res.status(200).json({
+    message: 'Admin stats',
+    stats: {
+      serverUptime: process.uptime(),
+      nodeVersion: process.version,
+      memoryUsage: process.memoryUsage(),
+    },
+  });
+});
 
 // Test route: echo request body
 app.post('/api/echo', (req: Request, res: Response) => {
@@ -40,21 +63,6 @@ app.post('/api/echo', (req: Request, res: Response) => {
     message: 'Echo successful',
     received: req.body,
     timestamp: new Date().toISOString(),
-  });
-});
-
-// Test route: get users (mock data)
-app.get('/api/users', (req: Request, res: Response) => {
-  const users = [
-    { id: 1, username: 'alice', email: 'alice@example.com' },
-    { id: 2, username: 'bob', email: 'bob@example.com' },
-    { id: 3, username: 'charlie', email: 'charlie@example.com' },
-  ];
-
-  res.status(200).json({
-    message: 'Users retrieved successfully',
-    count: users.length,
-    data: users,
   });
 });
 

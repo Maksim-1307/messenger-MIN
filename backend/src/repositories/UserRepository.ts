@@ -28,7 +28,7 @@ export class UserRepository {
   /**
    * Create a new user (only if username doesn't exist)
    */
-  async createIfNotExists(username: string, password: string): Promise<RegisterResult> {
+  async createIfNotExists(username: string, password: string, displayName?: string): Promise<RegisterResult> {
     const existing = await this.findByUsername(username);
     if (existing) {
       return 'USER_EXISTS';
@@ -37,8 +37,8 @@ export class UserRepository {
     const passwordHash = await bcrypt.hash(password, this.saltRounds);
 
     await db.query(
-      'INSERT INTO users (username, password_hash) VALUES ($1, $2)',
-      [username, passwordHash]
+      'INSERT INTO users (username, password_hash, display_name) VALUES ($1, $2, $3)',
+      [username, passwordHash, displayName || null]
     );
 
     return 'SUCCESS';
@@ -49,6 +49,41 @@ export class UserRepository {
    */
   async verifyPassword(plain: string, hash: string): Promise<boolean> {
     return bcrypt.compare(plain, hash);
+  }
+
+  /**
+   * Find user by ID
+   */
+  async findById(id: number): Promise<UserRow & { displayName: string | null } | null> {
+    const result = await db.query<UserRow & { display_name: string | null }>(
+      'SELECT id::text, username, password_hash, role, display_name FROM users WHERE id = $1',
+      [id]
+    );
+
+    return result.rows.length > 0 ? {
+      ...result.rows[0],
+      displayName: result.rows[0].display_name,
+    } : null;
+  }
+
+  /**
+   * Update username
+   */
+  async updateUsername(id: number, newUsername: string): Promise<void> {
+    await db.query(
+      'UPDATE users SET username = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+      [newUsername, id]
+    );
+  }
+
+  /**
+   * Update display name
+   */
+  async updateDisplayName(id: number, displayName: string): Promise<void> {
+    await db.query(
+      'UPDATE users SET display_name = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+      [displayName, id]
+    );
   }
 }
 

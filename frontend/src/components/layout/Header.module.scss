@@ -1,0 +1,78 @@
+.header {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+
+  &__container {
+    max-width: 1126px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__logo {
+    font-family: var(--heading);
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-h);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--accent);
+    }
+  }
+
+  &__nav {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+  }
+
+  &__link {
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 500;
+    transition: var(--transition);
+    position: relative;
+
+    &:hover {
+      color: var(--accent);
+    }
+
+    &--active {
+      color: var(--accent);
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: -4px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--accent);
+        border-radius: 1px;
+      }
+    }
+  }
+
+  &__user {
+    color: var(--text-h);
+    font-weight: 500;
+  }
+
+  &__logout {
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: transparent;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text);
+    font-weight: 500;
+    transition: var(--transition);
+
+    &:hover {
+      border-color: var(--error);
+      color: var(--error);
+    }
+  }
+}

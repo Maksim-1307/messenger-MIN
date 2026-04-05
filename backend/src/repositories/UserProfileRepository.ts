@@ -84,6 +84,40 @@ export class UserProfileRepository {
   async removeAvatar(userId: number | string): Promise<void> {
     await this.setAvatarPath(userId, null);
   }
+
+  /**
+   * Update profile fields
+   */
+  async updateProfile(
+    userId: number | string,
+    fields: { email?: string | null; description?: string | null }
+  ): Promise<void> {
+    const setClauses: string[] = [];
+    const values: unknown[] = [];
+    let paramIndex = 1;
+
+    if ('email' in fields) {
+      setClauses.push(`email = $${paramIndex}`);
+      values.push(fields.email);
+      paramIndex++;
+    }
+
+    if ('description' in fields) {
+      setClauses.push(`description = $${paramIndex}`);
+      values.push(fields.description);
+      paramIndex++;
+    }
+
+    if (setClauses.length === 0) return;
+
+    setClauses.push(`updated_at = CURRENT_TIMESTAMP`);
+    values.push(userId);
+
+    await db.query(
+      `UPDATE user_profiles SET ${setClauses.join(', ')} WHERE user_id = $${paramIndex}`,
+      values
+    );
+  }
 }
 
 // Singleton

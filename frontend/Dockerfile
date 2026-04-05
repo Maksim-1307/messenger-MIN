@@ -2,7 +2,7 @@
 FROM node:lts-alpine AS base
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
 # 2. development hot reload server
 FROM base AS development
@@ -17,7 +17,7 @@ ENV VITE_API_URL=$VITE_API_URL
 
 # default vite port, --host to allow connections from outside the container
 EXPOSE 5173
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+CMD ["sh", "-c", "npm install && npm run dev -- --host 0.0.0.0"]
 
 # 3. build
 FROM base AS builder

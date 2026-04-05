@@ -3,8 +3,11 @@ import cors from 'cors';
 import { register, login } from './controllers/authController.js';
 import { AuthError } from './services/authService.js';
 import { authenticate, requireAdmin } from './middleware/auth.js';
-import { avatarUpload, setFilePermissions } from './middleware/upload.js';
+import { avatarUpload, setFilePermissions, getAvatarUrl } from './middleware/upload.js';
 import { uploadAvatar, removeAvatar, getAvatar } from './controllers/avatarController.js';
+import { updateUserProfile } from './controllers/userController.js';
+import { userRepository } from './repositories/UserRepository.js';
+import { userProfileRepository } from './repositories/UserProfileRepository.js';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './utils/swagger.js';
 
@@ -54,12 +57,38 @@ app.delete('/api/users/avatar', authenticate, removeAvatar);
 app.get('/api/public/avatars/:filename', getAvatar);
 
 // Protected routes (requires valid JWT)
-app.get('/api/users/me', authenticate, (req: Request, res: Response) => {
-  res.status(200).json({
-    message: 'Current user',
-    user: req.user,
-  });
+app.get('/api/users/me', authenticate, async (req: Request, res: Response) => {
+  try {
+    const userId = req.user!.userId;
+    const numericUserId = parseInt(userId);
+    
+    const user = await userRepository.findById(numericUserId);
+    const profile = await userProfileRepository.findByUserId(numericUserId);
+
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+
+    res.status(200).json({
+      message: 'Current user',
+      user: {
+        id: parseInt(user.id),
+        username: user.username,
+        displayName: user.displayName,
+        email: profile?.email,
+        description: profile?.description,
+        avatarUrl: profile?.avatar_path ? getAvatarUrl(profile.avatar_path) : null,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    res.status(500).json({ message: 'Failed to fetch user profile' });
+  }
 });
+
+app.put('/api/users/me', authenticate, updateUserProfile);
 
 // Admin-only routes
 app.get('/api/admin/stats', authenticate, requireAdmin, (req: Request, res: Response) => {

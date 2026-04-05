@@ -98,6 +98,33 @@ export async function initializeDatabase(): Promise<void> {
     `);
     console.log('Database indexes created');
 
+    // Create trigger to automatically create user profile when user is created
+    await db.query(`
+      CREATE OR REPLACE FUNCTION create_user_profile()
+      RETURNS TRIGGER AS $$
+      BEGIN
+        INSERT INTO user_profiles (user_id)
+        VALUES (NEW.id);
+        RETURN NEW;
+      END;
+      $$ LANGUAGE plpgsql;
+    `);
+
+    await db.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_trigger WHERE tgname = 'trigger_create_user_profile'
+        ) THEN
+          CREATE TRIGGER trigger_create_user_profile
+          AFTER INSERT ON users
+          FOR EACH ROW
+          EXECUTE FUNCTION create_user_profile();
+        END IF;
+      END $$;
+    `);
+    console.log('Auto-create user profile trigger initialized');
+
     console.log('Database initialization completed');
   } catch (error) {
     console.error('Database initialization failed:', error);

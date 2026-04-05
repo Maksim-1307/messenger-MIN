@@ -26,10 +26,10 @@ export const getUserByUsername = async (username: string) => {
   return userRepository.findByUsername(username);
 };
 
-export const register = async (username: string, password: string): Promise<RegisterResult> => {
+export const register = async (username: string, password: string, displayName?: string): Promise<RegisterResult> => {
   validateCredentials(username, password);
 
-  const result = await userRepository.createIfNotExists(username, password);
+  const result = await userRepository.createIfNotExists(username, password, displayName);
 
   if (result === 'USER_EXISTS') {
     throw new AuthError(409, 'User already exists');

@@ -6,9 +6,9 @@ import { getAvatarUrl } from '../middleware/upload.js';
 
 export const register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { username, password } = req.body;
+    const { username, password, displayName } = req.body;
 
-    const result = await authService.register(username, password);
+    const result = await authService.register(username, password, displayName);
 
     if (result === 'USER_EXISTS') {
       res.status(409).json({ message: 'User already exists' });

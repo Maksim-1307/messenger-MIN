@@ -1,0 +1,161 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: min-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - min_postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - min-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      timeout: 30s
+      retries: 10
+      start_period: 40s
+      interval: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1.0'
+        reservations:
+          memory: 256M
+
+  redis:
+    image: redis:7-alpine
+    container_name: min-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --port ${REDIS_PORT}
+    volumes:
+      - min_redis_data:/data
+    networks:
+      - min-network
+ 
+  backend-prod:
+    profiles:
+      - prod
+    build:
+      context: ./backend
+      target: runner
+    platform: linux/amd64
+    image: maksimmaltsev/messenger-min-backend:latest
+    ports:
+      - "${BACKEND_PORT}:5001"
+    env_file:
+      - .env.secret
+    environment:
+      PORT: ${BACKEND_PORT}
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: ${DB_INTERNAL_PORT}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: ${POSTGRES_DB}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      min-network:
+        aliases:
+          - backend
+    volumes:
+      - min_backend_uploads:/app/uploads
+  
+  backend-dev:
+    profiles:
+      - dev
+    build:
+      context: ./backend
+      target: development
+    platform: linux/amd64
+    image: maksimmaltsev/messenger-min-backend:latest
+    ports:
+      - "${BACKEND_PORT}:5001"
+    env_file:
+      - .env.secret
+    environment:
+      PORT: ${BACKEND_PORT}
+      NODE_ENV: development
+      DB_HOST: postgres
+      DB_PORT: ${DB_INTERNAL_PORT}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: ${POSTGRES_DB}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      min-network:
+        aliases:
+          - backend
+    volumes:
+      - min_backend_uploads:/app/uploads
+      - ./backend/src:/app/src
+
+  frontend-prod:
+    profiles:
+      - prod
+    build:
+      context: ./frontend
+      target: runner
+      args:
+        API_URL: ${API_URL}
+        SOCKET_URL: ${SOCKET_URL}
+    platform: linux/amd64
+    image: maksimmaltsev/messenger-min-frontend:latest
+    ports:
+      - "${FRONTEND_PORT}:80"
+    environment:
+      API_URL: ${API_URL}
+      SOCKET_URL: ${SOCKET_URL}
+    networks:
+      - min-network
+    restart: unless-stopped
+
+  frontend-dev:
+    profiles:
+      - dev
+    build:
+      context: ./frontend
+      target: development
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+        VITE_SOCKET_URL: ${VITE_SOCKET_URL}
+    platform: linux/amd64
+    image: maksimmaltsev/messenger-min-frontend:latest
+    ports:
+      - "${FRONTEND_PORT}:5173"
+    environment:
+      VITE_RECAPTCHA_SITE_KEY: ${VITE_RECAPTCHA_SITE_KEY}
+      VITE_API_URL: ${VITE_API_URL}
+      VITE_SOCKET_URL: ${VITE_SOCKET_URL}
+    networks:
+      - min-network
+    volumes:
+      - ./frontend:/app
+    restart: unless-stopped
+
+volumes:
+  min_postgres_data:
+  min_redis_data:
+  min_backend_uploads:
+
+networks:
+  min-network:
+    driver: bridge

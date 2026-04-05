@@ -14,10 +14,39 @@ export async function initializeDatabase(): Promise<void> {
         username VARCHAR(255) UNIQUE NOT NULL,
         display_name VARCHAR(255),
         password_hash VARCHAR(255) NOT NULL,
+        role VARCHAR(50) DEFAULT 'visitor',
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
     console.log('Users table initialized');
+
+    // Add role column if it doesn't exist (migration for existing databases)
+    await db.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'users' AND column_name = 'role'
+        ) THEN
+          ALTER TABLE users ADD COLUMN role VARCHAR(50) DEFAULT 'visitor';
+        END IF;
+      END $$;
+    `);
+    console.log('Users role column ensured');
+
+    // Migration: remove email column from users table if it exists (belongs in user_profiles)
+    await db.query(`
+      DO $$
+      BEGIN
+        IF EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'users' AND column_name = 'email'
+        ) THEN
+          ALTER TABLE users DROP COLUMN email;
+        END IF;
+      END $$;
+    `);
+    console.log('Users email column removed (migrated to user_profiles)');
 
     // Create user_profiles table if it doesn't exist
     await db.query(`

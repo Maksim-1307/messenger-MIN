@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { User, LoginCredentials, RegisterCredentials, AuthContextType } from '../types/auth';
 import { api } from '../utils/api';
 
@@ -35,6 +36,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(getUserFromStorage);
   const [token, setToken] = useState<string | null>(getTokenFromStorage);
   const [isLoading, setIsLoading] = useState(true);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -98,6 +101,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     clearAuthData();
     setUser(null);
     setToken(null);
+    navigate('/login', { replace: true });
   }, []);
 
   const updateUser = useCallback((userData: Partial<User>): void => {
@@ -108,12 +112,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [user]);
 
+  const isTokenValid = useCallback((token: string): boolean => {
+    try {
+      const decoded = JSON.parse(atob(token.split('.')[1]));
+      return decoded.exp > Date.now() / 1000;
+    } catch {
+      return false;
+    }
+  }, []);
+
+  const requireAuth = useCallback((redirectPath: string = '/login'): boolean => {
+    const token = getTokenFromStorage();
+    if (!token || !isTokenValid(token)) {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
+      window.location.replace(redirectPath);
+      navigate(redirectPath, { replace: true });
+      return false;
+    }
+    return true;
+  }, [navigate, isTokenValid]);
+
   const value: AuthContextType = {
     user,
     token,
     isAuthenticated: !!user && !!token,
     isAdmin: user?.role === 'admin' || false,
     isLoading,
+    requireAuth,
     login,
     register,
     logout,

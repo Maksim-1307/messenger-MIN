@@ -1,6 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
-import { ProtectedRoute } from './components/layout/ProtectedRoute';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
@@ -25,9 +24,7 @@ function App() {
         <Route
           path="profile"
           element={
-            <ProtectedRoute>
-              <ProfilePage />
-            </ProtectedRoute>
+            <ProfilePage />
           }
         />
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,5 +1,4 @@
-import { useState, useEffect, type FormEvent, type ChangeEvent, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, type FormEvent, type ChangeEvent, useRef, use } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { api, toFullUrl } from '../utils/api';
 import { Input } from '../components/ui/Input';
@@ -18,8 +17,7 @@ interface UserProfile {
 }
 
 export const ProfilePage: React.FC = () => {
-  const { token, updateUser, logout } = useAuth();
-  const navigate = useNavigate();
+  const { token, updateUser, logout, requireAuth } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -37,6 +35,11 @@ export const ProfilePage: React.FC = () => {
   const [removeAvatar, setRemoveAvatar] = useState(false);
   const [usernameChanged, setUsernameChanged] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // check if user is authenticated (only on mount)
+  useEffect(() => {
+    requireAuth('/login');
+  }, [requireAuth]);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -116,6 +119,11 @@ export const ProfilePage: React.FC = () => {
         await api.delete('/api/users/avatar', token);
       }
 
+      if (usernameChanged) {
+        logout();
+        return;
+      }
+
       // Fetch updated profile
       const updatedResponse = await api.get<{ user: UserProfile; token?: string }>('/api/users/me', token);
       setProfile(updatedResponse.user);
@@ -130,14 +138,6 @@ export const ProfilePage: React.FC = () => {
       setSuccess('Profile updated successfully');
       setAvatar(null);
       setRemoveAvatar(false);
-
-      // Logout if username was changed
-      if (usernameChanged) {
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('auth_user');
-        window.location.replace('/login');
-        return;
-      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update profile');
     } finally {
@@ -209,7 +209,7 @@ export const ProfilePage: React.FC = () => {
               <Button onClick={() => setIsEditing(true)} variant="primary">
                 Edit Profile
               </Button>
-              <Button onClick={logout} variant="danger">
+              <Button onClick={() => logout} variant="danger">
                 Logout
               </Button>
             </div>

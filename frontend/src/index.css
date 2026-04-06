@@ -7,7 +7,8 @@
 
   /* Background colors */
   --bg: #ffffff;
-  --bg-secondary: #f8f7fa;
+  --bg-secondary: #ccd6e1;
+  --bg-transparent: rgba(34, 36, 40, 0.4);
   --bg-input: #ffffff;
 
   /* Border colors */
@@ -33,14 +34,14 @@
     rgba(0, 0, 0, 0.05) 0 2px 4px -1px, rgba(0, 0, 0, 0.03) 0 1px 2px -1px;
 
   /* Fonts */
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  --sans: "Libre Franklin", sans-serif;
+  --heading: "Libre Franklin", sans-serif;
+  --mono: "Libre Franklin", sans-serif;
 
   /* Spacing */
   --spacing-xs: 4px;
   --spacing-sm: 8px;
-  --spacing-md: 16px;
+  --spacing-md: 10px;
   --spacing-lg: 24px;
   --spacing-xl: 32px;
   --spacing-2xl: 48px;
@@ -71,19 +72,21 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --text: #9ca3af;
-    --text-light: #6b7280;
-    --text-h: #f3f4f6;
+    --text: #b0b0b0;
+    --text-light: #868686;
+    --text-h: #ffffff;
     --text-white: #f9fafb;
-    --bg: #16171d;
-    --bg-secondary: #1e1f27;
-    --bg-input: #1e1f27;
+    --bg: #070707;
+    --bg-secondary: rgba(34, 36, 40);
+    --bg-transparent: rgba(34, 36, 40, 0.5);
+    --bg-input: #000000;
     --border: #2e303a;
-    --border-focus: rgba(192, 132, 252, 0.5);
-    --accent: #c084fc;
-    --accent-hover: #a855f7;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
+    --border-focus: rgba(127, 147, 220, 0.5);
+    --accent: rgb(127, 147, 220);
+    --accent-light:  rgb(174, 185, 253);
+    --accent-hover: rgb(165, 135, 226);
+    --accent-bg: rgba(127, 147, 220, 0.15);
+    --accent-border: rgba(127, 147, 220, 0.5);
     --error: #f87171;
     --error-bg: rgba(248, 113, 113, 0.15);
     --success: #4ade80;
@@ -121,33 +124,25 @@ h2,
 h3 {
   font-family: var(--heading);
   font-weight: 500;
+  line-height: .9;
   color: var(--text-h);
 }
 
 h1 {
-  font-size: 56px;
+  font-size: 36px;
   letter-spacing: -1.68px;
   margin: var(--spacing-xl) 0;
-
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: var(--spacing-lg) 0;
-  }
 }
 
 h2 {
-  font-size: 24px;
+  font-size: 20px;
   line-height: 118%;
   letter-spacing: -0.24px;
   margin: 0 0 var(--spacing-sm);
-
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
 }
 
 h3 {
-  font-size: 20px;
+  font-size: 18px;
   margin: 0 0 var(--spacing-md);
 }
 
@@ -163,6 +158,10 @@ a {
   &:hover {
     color: var(--accent-hover);
   }
+}
+
+span.accent-light {
+  color: var(--accent-light);
 }
 
 code {

@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import styles from './HomePage.module.scss';
+import { Icon } from '@iconify/react';
 
 export const HomePage: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -29,7 +30,8 @@ export const HomePage: React.FC = () => {
       </p>
       <div className={styles.home__actions}>
         <button onClick={() => navigate('/profile')} className={styles.home__action}>
-          Go to Profile
+          Start chatting
+          <Icon icon="tabler:arrow-right" />
         </button>
       </div>
     </div>

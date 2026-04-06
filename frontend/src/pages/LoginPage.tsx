@@ -42,7 +42,7 @@ export const LoginPage: React.FC = () => {
     <div className={styles.login}>
       <div className={styles.login__container}>
         <h1 className={styles.login__title}>Welcome Back</h1>
-        <p className={styles.login__subtitle}>Login to continue to Messenger MIN</p>
+        <p className={styles.login__subtitle}>Login to continue to Messenger MIN</p> 
         
         <form onSubmit={handleSubmit} className={styles.login__form}>
           <Input

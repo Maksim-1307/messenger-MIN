@@ -95,7 +95,7 @@ export const sendMessage = async (req: Request, res: Response, next: NextFunctio
     const chatKey = buildChatKey(senderId, recipientId);
 
     // Ensure a private chat exists (or create one)
-    await chatRepository.getOrCreatePrivateChat(senderId, recipientId);
+    const chat = await chatRepository.getOrCreatePrivateChat(senderId, recipientId);
 
     const message = await messageRepository.create({
       senderId,
@@ -104,9 +104,12 @@ export const sendMessage = async (req: Request, res: Response, next: NextFunctio
       text: text.trim(),
     });
 
+    // Update the chat's last_message_id
+    await chatRepository.updateLastMessage(parseInt(chat.id), parseInt(message.id));
+
     res.status(201).json({
       message: 'Message sent successfully',
-      message,
+      data: message,
     });
   } catch (error) {
     next(error);

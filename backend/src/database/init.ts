@@ -177,6 +177,26 @@ export async function initializeDatabase(): Promise<void> {
     `);
     console.log('Database indexes created');
 
+    // Backfill: set last_message_id for private chats that have messages but null last_message_id
+    // For private chats, chat_key = min(participant1, participant2)_max(participant1, participant2)
+    await db.query(`
+      UPDATE chats c
+      SET last_message_id = (
+        SELECT m.id FROM messages m
+        WHERE m.chat_key = CONCAT(
+          LEAST(p1.user_id, p2.user_id), '_', GREATEST(p1.user_id, p2.user_id)
+        )
+        ORDER BY m.created_at DESC
+        LIMIT 1
+      )
+      FROM chat_participants p1
+      JOIN chat_participants p2 ON p1.chat_id = p2.chat_id AND p1.user_id < p2.user_id
+      WHERE c.id = p1.chat_id
+        AND c.type = 'private'
+        AND c.last_message_id IS NULL
+    `);
+    console.log('Chat last_message_id backfilled');
+
     console.log('Database initialization completed');
   } catch (error) {
     console.error('Database initialization failed:', error);

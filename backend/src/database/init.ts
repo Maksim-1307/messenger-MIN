@@ -125,6 +125,58 @@ export async function initializeDatabase(): Promise<void> {
     `);
     console.log('Auto-create user profile trigger initialized');
 
+    // Create chats table if it doesn't exist
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS chats (
+        id SERIAL PRIMARY KEY,
+        type VARCHAR(50) NOT NULL CHECK (type IN ('private', 'group', 'channel')),
+        last_message_id INTEGER,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('Chats table initialized');
+
+    // Create chat_participants table if it doesn't exist
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS chat_participants (
+        chat_id INTEGER NOT NULL REFERENCES chats(id) ON DELETE CASCADE,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        PRIMARY KEY (chat_id, user_id)
+      )
+    `);
+    console.log('Chat participants table initialized');
+
+    // Create messages table if it doesn't exist
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS messages (
+        id SERIAL PRIMARY KEY,
+        sender_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        recipient_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        chat_key TEXT NOT NULL,
+        text TEXT NOT NULL,
+        is_read BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('Messages table initialized');
+
+    // Create indexes for faster queries
+    await db.query(`
+      -- Messages indexes
+      CREATE INDEX IF NOT EXISTS idx_messages_chat_key ON messages(chat_key);
+      CREATE INDEX IF NOT EXISTS idx_messages_chat_key_created ON messages (chat_key, created_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_messages_sender_id ON messages (sender_id);
+      CREATE INDEX IF NOT EXISTS idx_messages_recipient_id ON messages (recipient_id);
+      CREATE INDEX IF NOT EXISTS idx_messages_unread ON messages (recipient_id) WHERE is_read = FALSE;
+
+      -- Chats indexes
+      CREATE INDEX IF NOT EXISTS idx_chats_type ON chats(type);
+
+      -- Chat participants indexes
+      CREATE INDEX IF NOT EXISTS idx_chat_participants_user_id ON chat_participants(user_id);
+    `);
+    console.log('Database indexes created');
+
     console.log('Database initialization completed');
   } catch (error) {
     console.error('Database initialization failed:', error);

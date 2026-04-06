@@ -58,7 +58,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({ items }) => 
                 `${styles['bottom-navigation__item']} ${styles['bottom-navigation__item--active']}` : 
                 `${styles['bottom-navigation__item']}`;
             return (
-                <Link to={item.path} className={className} key={index} ref={index === currentItemNum ? currentItemRef : null}>
+                <Link to={item.path} className={className} key={index} ref={index === currentItemNum ? currentItemRef : undefined}>
                     <Icon className={styles['bottom-navigation__item-icon']} icon={item.icon} />
                     <span>{item.label}</span>
                 </Link>

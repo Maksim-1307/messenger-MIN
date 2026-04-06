@@ -1,37 +1,39 @@
 :root {
   /* Text colors */
-  --text: #6b6375;
-  --text-light: #9ca3af;
-  --text-h: #08060d;
+  --text: #4a4a4a;
+  --text-light: #6b6b6b;
+  --text-h: #0a0a0a;
+  --text-accent: #1a1a1a;
   --text-white: #ffffff;
 
   /* Background colors */
-  --bg: #ffffff;
-  --bg-secondary: #ccd6e1;
-  --bg-transparent: rgba(34, 36, 40, 0.4);
+  --bg: #fafafa;
+  --bg-secondary: #f0f0f0;
+  --bg-transparent: rgba(0, 0, 0, 0.08);
   --bg-input: #ffffff;
 
   /* Border colors */
-  --border: #e5e4e7;
-  --border-focus: rgba(170, 59, 255, 0.5);
+  --border: #e8e8e8;
+  --border-focus: rgba(102, 122, 195, 0.4);
 
   /* Accent colors */
-  --accent: #aa3bff;
-  --accent-hover: #9328ff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
+  --accent: rgb(102, 122, 195);
+  --accent-light: rgb(140, 155, 225);
+  --accent-hover: rgb(85, 100, 170);
+  --accent-bg: rgba(102, 122, 195, 0.1);
+  --accent-border: rgba(102, 122, 195, 0.4);
 
   /* Status colors */
-  --error: #ef4444;
-  --error-bg: rgba(239, 68, 68, 0.1);
-  --success: #22c55e;
-  --success-bg: rgba(34, 197, 94, 0.1);
+  --error: #dc2626;
+  --error-bg: rgba(220, 38, 38, 0.08);
+  --success: #16a34a;
+  --success-bg: rgba(22, 163, 74, 0.08);
 
   /* Shadow */
   --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+    rgba(0, 0, 0, 0.08) 0 10px 15px -3px, rgba(0, 0, 0, 0.04) 0 4px 6px -2px;
   --shadow-sm:
-    rgba(0, 0, 0, 0.05) 0 2px 4px -1px, rgba(0, 0, 0, 0.03) 0 1px 2px -1px;
+    rgba(0, 0, 0, 0.04) 0 2px 4px -1px, rgba(0, 0, 0, 0.02) 0 1px 2px -1px;
 
   /* Fonts */
   --sans: "Libre Franklin", sans-serif;
@@ -75,6 +77,7 @@
     --text: #b0b0b0;
     --text-light: #868686;
     --text-h: #ffffff;
+    --text-accent: #f9fafb;
     --text-white: #f9fafb;
     --bg: #070707;
     --bg-secondary: rgba(34, 36, 40);

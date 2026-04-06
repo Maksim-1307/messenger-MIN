@@ -18,7 +18,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({ items }) => 
     const currentPath = useLocation().pathname;
     const [currentItemNum, setCurrentItemNum] = useState(1);
     const [isOpen, setIsOpen] = useState(false);
-    const currentItemRef = useRef<HTMLDivElement>(null);
+    const currentItemRef = useRef<HTMLAnchorElement | null>(null);
     const bgEffectRef = useRef<HTMLDivElement>(null);
     
     useEffect(() => {
@@ -43,7 +43,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({ items }) => 
 
     useEffect(() => {
         if (currentItemRef.current && bgEffectRef.current) {
-            const { offsetLeft, offsetTop, offsetWidth, offsetHeight } = currentItemRef.current;
+            const { offsetLeft, offsetTop, offsetWidth } = currentItemRef.current;
             const finalOffsetLeft = offsetLeft - offsetWidth / 2 + 18;
             const finalOffsetTop = offsetTop - 25;
             console.log('top offset', finalOffsetTop);

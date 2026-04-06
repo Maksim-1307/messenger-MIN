@@ -3,7 +3,7 @@ import { useAuth } from '../../hooks/useAuth';
 import styles from './Header.module.scss';
 
 export const Header: React.FC = () => {
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
   const location = useLocation();
 
   const isActive = (path: string) => location.pathname === path;

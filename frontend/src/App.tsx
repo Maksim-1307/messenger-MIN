@@ -4,6 +4,8 @@ import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { ChatsPage } from './pages/ChatsPage';
+import { ChatPage } from './pages/ChatPage';
 import { useAuth } from './hooks/useAuth';
 
 function App() {
@@ -27,11 +29,13 @@ function App() {
             <ProfilePage />
           }
         />
-        <Route 
+        <Route
           path="chats"
-          element={
-            <HomePage />
-          }
+          element={<ChatsPage />}
+        />
+        <Route
+          path="chat/:userId"
+          element={<ChatPage />}
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

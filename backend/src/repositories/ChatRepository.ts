@@ -171,11 +171,9 @@ export class ChatRepository {
         c.type,
         c.last_message_id::text,
         c.updated_at::text,
-        array_agg(DISTINCT cp.user_id)::text[] as participants
+        (SELECT array_agg(cp2.user_id)::text[] FROM chat_participants cp2 WHERE cp2.chat_id = c.id) as participants
        FROM chats c
-       INNER JOIN chat_participants cp ON c.id = cp.chat_id
-       WHERE cp.user_id = $1${whereExtra}
-       GROUP BY c.id
+       WHERE c.id IN (SELECT chat_id FROM chat_participants WHERE user_id = $1)${whereExtra}
        ORDER BY c.updated_at DESC
        LIMIT $${paramIndex}`,
       values,

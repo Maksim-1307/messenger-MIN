@@ -1,0 +1,146 @@
+.chats {
+  max-width: 700px;
+  margin: 0 auto;
+
+  &__title {
+    font-size: 28px;
+    margin-bottom: var(--spacing-lg);
+  }
+
+  &__list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__loader {
+    text-align: center;
+    padding: var(--spacing-lg);
+    color: var(--text-light);
+  }
+}
+
+.loading,
+.error,
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  text-align: center;
+  gap: var(--spacing-md);
+}
+
+.error {
+  color: var(--error);
+}
+
+.empty {
+  color: var(--text-light);
+  h2 {
+    color: var(--text);
+    margin: 0;
+  }
+  p {
+    margin: 0;
+  }
+}
+
+.chatItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  cursor: pointer;
+  transition: var(--transition);
+  border-radius: var(--radius-md);
+
+  &:hover {
+    background: var(--bg-input);
+  }
+
+  &--unread .chatItem__preview {
+    color: var(--text-accent);
+    font-weight: 600;
+  }
+
+  &__avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: var(--bg-input);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    span {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+  }
+
+  &__content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  &__name {
+    font-weight: 600;
+    font-size: 15px;
+  }
+
+  &__time {
+    font-size: 12px;
+    color: var(--text-light);
+    flex-shrink: 0;
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  &__preview {
+    font-size: 14px;
+    color: var(--text-light);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 10px;
+    background: var(--accent);
+    color: var(--text-white);
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+}

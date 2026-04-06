@@ -7,7 +7,7 @@
   &__container {
     width: 100%;
     max-width: 420px;
-    padding: var(--spacing-xl);
+    // padding: var(--spacing-xl);
   }
 
   &__title {
@@ -29,6 +29,7 @@
 
   &__avatar {
     display: flex;
+    padding: 15px 0;
     flex-direction: column;
     gap: var(--spacing-sm);
   }

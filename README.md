@@ -19,10 +19,10 @@
 * **DB Management:** TablePlus 
 
 ### Roadmap
-- [ ] **Step 1:** Write multi-staged Dockerfiles, setup docker network and services: PostgreSQL, Redis, NGinx, TablePlus.
-- [ ] **Step 2:** Implement Authorization by JWT.
+- [x] **Step 1:** Write multi-staged Dockerfiles, setup docker network and services: PostgreSQL, Redis, NGinx, TablePlus.
+- [x] **Step 2:** Implement Authorization by JWT.
 - [ ] **Step 3:** Implement main HTTP endpoints.
-- [ ] **Step 4:** Implement user interface.
+- [x] **Step 4:** Implement user interface.
 - [ ] **Step 5:** Implement WebSockets for real-time communication.
 - [ ] **Step 6:** Integrate LLM Agent for "Context Summary" and "translation" features.
 - [ ] **Step 4:** Deploy to University VM.

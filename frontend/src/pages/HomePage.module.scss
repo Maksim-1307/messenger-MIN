@@ -40,14 +40,29 @@
     color: var(--text-white);
     text-decoration: none;
     border-radius: var(--radius-md);
-    font-weight: 500;
+    font-weight: 600;
+    font-size: 16px;
     transition: var(--transition);
     min-width: 140px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+
+    svg {
+      font-size: 20px;
+      transition: .5s;
+      position: relative;
+      display: block;
+      right: 0;
+    }
 
     &:hover {
       background: var(--accent-hover);
       transform: translateY(-2px);
       box-shadow: var(--shadow);
+      svg {
+        right: -5px;
+      }
     }
   }
 }

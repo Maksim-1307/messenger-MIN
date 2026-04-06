@@ -2,15 +2,15 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: var(--spacing-md);
+  padding: 8px 13px;//var(--spacing-md);
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.5;
   border-radius: var(--radius-md);
   transition: var(--transition);
   cursor: pointer;
   border: 2px solid transparent;
-  min-height: 48px;
+  // min-height: 48px;
 
   &:disabled {
     opacity: 0.5;

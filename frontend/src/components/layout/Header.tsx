@@ -12,7 +12,8 @@ export const Header: React.FC = () => {
     <header className={styles.header}>
       <div className={styles.header__container}>
         <Link to="/" className={styles.header__logo}>
-          Messenger MIN
+          <img src="/favicon.png" alt="Logo" />
+          <span>MIN</span>
         </Link>
 
         <nav className={styles.header__nav}>
@@ -24,9 +25,6 @@ export const Header: React.FC = () => {
               >
                 Profile
               </Link>
-              <span className={styles.header__user}>
-                {user?.displayName || user?.username}
-              </span>
               <button onClick={logout} className={styles.header__logout}>
                 Logout
               </button>

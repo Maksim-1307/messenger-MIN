@@ -27,6 +27,12 @@ function App() {
             <ProfilePage />
           }
         />
+        <Route 
+          path="chats"
+          element={
+            <HomePage />
+          }
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

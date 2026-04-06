@@ -209,7 +209,7 @@ export const ProfilePage: React.FC = () => {
               <Button onClick={() => setIsEditing(true)} variant="primary">
                 Edit Profile
               </Button>
-              <Button onClick={() => logout} variant="danger">
+              <Button onClick={() => logout()} variant="danger">
                 Logout
               </Button>
             </div>

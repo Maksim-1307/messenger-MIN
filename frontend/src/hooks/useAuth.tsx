@@ -52,9 +52,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem(USER_KEY, JSON.stringify(response.user));
       } catch (error) {
         console.error('Failed to fetch user profile:', error);
-        clearAuthData();
-        setUser(null);
-        setToken(null);
+        // Only clear auth if the server rejected the token (401)
+        // Don't clear on network errors (server down, CORS, etc.)
+        if (error instanceof Error && 'status' in error && (error as any).status === 401) {
+          clearAuthData();
+          setUser(null);
+          setToken(null);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -122,16 +126,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const requireAuth = useCallback((redirectPath: string = '/login'): boolean => {
-    const token = getTokenFromStorage();
-    if (!token || !isTokenValid(token)) {
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('auth_user');
-      window.location.replace(redirectPath);
+    if (!token) {
       navigate(redirectPath, { replace: true });
       return false;
     }
     return true;
-  }, [navigate, isTokenValid]);
+  }, [navigate, token]);
 
   const value: AuthContextType = {
     user,

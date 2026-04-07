@@ -1,0 +1,118 @@
+.profile {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 70vh;
+  padding: var(--spacing-xl);
+
+  &__container {
+    width: 100%;
+    max-width: 600px;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-xl);
+  }
+
+  &__title {
+    margin: 0;
+    flex-grow: 1;
+    text-align: center;
+    padding-right: 50px;
+    font-size: 30px;
+  }
+
+  &__back {
+    border: 2px solid var(--border);
+    border-radius: var(--radius-md);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-h);
+    transition: var(--transition);
+    border-radius: 100px;
+
+    &:hover {
+      background: var(--accent-bg);
+    }
+  }
+
+  &__loading,
+  &__error {
+    text-align: center;
+    padding: var(--spacing-xl);
+    color: var(--text);
+  }
+
+  &__error {
+    background: var(--error-bg);
+    color: var(--error);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+  }
+
+  &__avatar {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto var(--spacing-xl);
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--border);
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  &__avatarPlaceholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-secondary);
+    color: var(--text-light);
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  &__fieldLabel {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  &__fieldValue {
+    font-size: 18px;
+    color: var(--text-h);
+    margin: 0;
+  }
+
+  &__actions {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+    justify-content: center;
+    button {
+      gap: 5px;
+    }
+  }
+}

@@ -90,6 +90,19 @@ const options: swaggerJsdoc.Options = {
             hasMore: { type: 'boolean' },
           },
         },
+        PublicUserProfile: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            username: { type: 'string' },
+            displayName: { type: 'string', nullable: true },
+            role: { type: 'string' },
+            email: { type: 'string', nullable: true },
+            description: { type: 'string', nullable: true },
+            avatarUrl: { type: 'string', nullable: true },
+            createdAt: { type: 'string', format: 'date-time' },
+          },
+        },
         Error: {
           type: 'object',
           properties: {

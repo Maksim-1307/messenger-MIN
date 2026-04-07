@@ -1,9 +1,10 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import styles from './Header.module.scss';
+import { Icon } from '@iconify/react';
 
 export const Header: React.FC = () => {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated } = useAuth();
   const location = useLocation();
 
   const isActive = (path: string) => location.pathname === path;
@@ -19,7 +20,7 @@ export const Header: React.FC = () => {
         <nav className={styles.header__nav}>
           {isAuthenticated ? (
             <>
-              Theme switch
+              <Icon icon="jam:write" width={20} />
             </>
           ) : (
             <>

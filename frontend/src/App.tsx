@@ -6,6 +6,7 @@ import { RegisterPage } from './pages/RegisterPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { ChatsPage } from './pages/ChatsPage';
 import { ChatPage } from './pages/ChatPage';
+import { UserProfilePage } from './pages/UserProfilePage';
 import { useAuth } from './hooks/useAuth';
 
 function App() {
@@ -42,6 +43,10 @@ function App() {
       <Route
         path="/chat/:userId"
         element={<ChatPage />}
+      />
+      <Route
+        path="/chats/:userId/info"
+        element={<UserProfilePage />}
       />
     </Routes>
   );

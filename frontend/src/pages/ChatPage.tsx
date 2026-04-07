@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { chatApi } from '../api/chat';
+import { userApi, toFullUrl } from '../api/users';
 import type { Message } from '../types/chat';
 import styles from './ChatPage.module.scss';
 import { Icon } from '@iconify/react';
@@ -42,6 +43,7 @@ const ChatPageContent: React.FC<ChatPageContentProps> = ({ token, targetUserId, 
   const [inputText, setInputText] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [targetUsername, setTargetUsername] = useState<string | null>(null);
+  const [targetAvatarUrl, setTargetAvatarUrl] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
@@ -103,6 +105,21 @@ const ChatPageContent: React.FC<ChatPageContentProps> = ({ token, targetUserId, 
     },
     [token, targetUserId, cursor, targetUsername, currentUser, scrollToBottom],
   );
+
+  // Fetch user profile for avatar and name
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const response = await userApi.getUserProfile(token, String(targetUserId));
+        setTargetUsername(response.user.displayName);
+        setTargetAvatarUrl(response.user.avatarUrl);
+      } catch (err) {
+        console.error('Failed to load user profile:', err);
+      }
+    };
+
+    fetchUserProfile();
+  }, [token, targetUserId]);
 
   // Initial load
   useEffect(() => {
@@ -166,7 +183,16 @@ const ChatPageContent: React.FC<ChatPageContentProps> = ({ token, targetUserId, 
           <div className={`${styles.chat__userInfo} glass`}>
             <h2 className={styles.chat__title}>{targetUsername ?? `User ${targetUserId}`}</h2>
           </div>
-          <div className={`${styles['chat__user-avatar']} glass`}></div>
+          <button
+            className={`${styles['chat__user-avatar']} glass`}
+            onClick={() => navigate(`/chats/${targetUserId}/info`)}
+          >
+            {targetAvatarUrl ? (
+              <img src={toFullUrl(targetAvatarUrl) ?? ''} alt="Avatar" />
+            ) : (
+              <Icon icon="tabler:user" width={20} />
+            )}
+          </button>
         </div>
 
         {/* Messages */}

@@ -111,6 +111,46 @@ router.post('/api/auth/login', (_req, _res, _next) => {});
 
 /**
  * @openapi
+ * /api/users/{userId}:
+ *   get:
+ *     tags: [Users]
+ *     summary: Get public user profile
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *     responses:
+ *       200:
+ *         description: User profile
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 user:
+ *                   $ref: '#/components/schemas/PublicUserProfile'
+ *       400:
+ *         description: Invalid user ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get('/api/users/:userId', (_req, _res, _next) => {});
+
+/**
+ * @openapi
  * /api/users/me:
  *   get:
  *     tags: [Users]

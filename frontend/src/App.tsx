@@ -17,11 +17,11 @@ function App() {
         <Route index element={<HomePage />} />
         <Route
           path="login"
-          element={isAuthenticated ? <Navigate to="/profile" replace /> : <LoginPage />}
+          element={isAuthenticated ? <Navigate to="/chats" replace /> : <LoginPage />}
         />
         <Route
           path="register"
-          element={isAuthenticated ? <Navigate to="/profile" replace /> : <RegisterPage />}
+          element={isAuthenticated ? <Navigate to="/chats" replace /> : <RegisterPage />}
         />
         <Route
           path="profile"
@@ -34,11 +34,15 @@ function App() {
           element={<ChatsPage />}
         />
         <Route
-          path="chat/:userId"
-          element={<ChatPage />}
+          path="settings"
+          element={<HomePage />}
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
+      <Route
+        path="/chat/:userId"
+        element={<ChatPage />}
+      />
     </Routes>
   );
 }

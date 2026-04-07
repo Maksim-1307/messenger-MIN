@@ -11,7 +11,7 @@ export const Header: React.FC = () => {
   return (
     <header className={styles.header}>
       <div className={styles.header__container}>
-        <Link to="/" className={styles.header__logo}>
+        <Link to="/chats" className={styles.header__logo}>
           <img src="/favicon.png" alt="Logo" />
           <span>MIN</span>
         </Link>
@@ -19,15 +19,7 @@ export const Header: React.FC = () => {
         <nav className={styles.header__nav}>
           {isAuthenticated ? (
             <>
-              <Link
-                to="/profile"
-                className={`${styles.header__link} ${isActive('/profile') ? styles['header__link--active'] : ''}`}
-              >
-                Profile
-              </Link>
-              <button onClick={logout} className={styles.header__logout}>
-                Logout
-              </button>
+              Theme switch
             </>
           ) : (
             <>

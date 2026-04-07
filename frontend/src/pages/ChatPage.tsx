@@ -44,12 +44,19 @@ const ChatPageContent: React.FC<ChatPageContentProps> = ({ token, targetUserId, 
   const [targetUsername, setTargetUsername] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const loadingRef = useRef(false);
 
   // Scroll to bottom on initial load or new message
   const scrollToBottom = useCallback((smooth = false) => {
-    messagesEndRef.current?.scrollIntoView({ behavior: smooth ? 'smooth' : 'instant', block: 'end' });
+    const container = messagesContainerRef.current;
+    if (container) {
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: smooth ? 'smooth' : 'instant',
+      });
+    }
   }, []);
 
   // Load a page of messages (older)
@@ -149,56 +156,60 @@ const ChatPageContent: React.FC<ChatPageContentProps> = ({ token, targetUserId, 
   }
 
   return (
-    <div className={styles.chat}>
-      {/* Header */}
-      <div className={styles.chat__header}>
-        <button className={styles.chat__back} onClick={() => navigate('/chats')}>
-          <Icon icon="tabler:arrow-left" width={20} />
-        </button>
-        <div className={styles.chat__userInfo}>
-          <h2 className={styles.chat__title}>{targetUsername ?? `User ${targetUserId}`}</h2>
-        </div>
-      </div>
-
-      {/* Messages */}
-      <div className={styles.chat__messages}>
-        {messages.length === 0 && !isLoading ? (
-          <div className={styles.empty}>
-            <Icon icon="ph:chat-circle-text" width={48} />
-            <p>No messages yet. Say hello!</p>
+    <div className={styles['chat__wrapper']}>
+      <div className={styles.chat}>
+        {/* Header */}
+        <div className={styles.chat__header}>
+          <button className={`${styles.chat__back} glass`} onClick={() => navigate('/chats')}>
+            <Icon icon="tabler:arrow-left" width={20} />
+          </button>
+          <div className={`${styles.chat__userInfo} glass`}>
+            <h2 className={styles.chat__title}>{targetUsername ?? `User ${targetUserId}`}</h2>
           </div>
-        ) : (
-          <>
-            {isLoadingMore && <div className={styles.chat__loader}>Loading older messages...</div>}
-            {hasMore && <div ref={sentinelRef} style={{ height: 1 }} />}
+          <div className={`${styles['chat__user-avatar']} glass`}></div>
+        </div>
 
-            <MessageList messages={messages} currentUserId={currentUser?.id ?? 0} />
-
-            <div ref={messagesEndRef} />
-          </>
-        )}
-      </div>
-
-      {/* Error */}
-      {error && <div className={styles.chat__error}>{error}</div>}
-
-      {/* Input */}
-      <form className={styles.chat__input} onSubmit={handleSend}>
-        <input
-          type="text"
-          placeholder="Type a message..."
-          value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
-          disabled={isSending}
-        />
-        <button type="submit" disabled={isSending || !inputText.trim()}>
-          {isSending ? (
-            <Icon icon="svg-spinners:ring-resize" />
+        {/* Messages */}
+        <div ref={messagesContainerRef} className={styles.chat__messages}>
+          {messages.length === 0 && !isLoading ? (
+            <div className={styles.empty}>
+              <Icon icon="ph:chat-circle-text" width={48} />
+              <p>No messages yet. Say hello!</p>
+            </div>
           ) : (
-            <Icon icon="tabler:send" />
+            <>
+              {isLoadingMore && <div className={styles.chat__loader}>Loading older messages...</div>}
+              {hasMore && <div ref={sentinelRef} style={{ height: 1 }} />}
+
+              <MessageList messages={messages} currentUserId={currentUser?.id ?? 0} />
+
+              <div ref={messagesEndRef} />
+            </>
           )}
-        </button>
-      </form>
+        </div>
+
+        {/* Error */}
+        {error && <div className={styles.chat__error}>{error}</div>}
+
+        {/* Input */}
+        <form className={styles.chat__input} onSubmit={handleSend}>
+          <input
+            type="text"
+            placeholder="Type a message..."
+            className='glass'
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            disabled={isSending}
+          />
+          <button className='accent-glass' type="submit" disabled={isSending || !inputText.trim()}>
+            {isSending ? (
+              <Icon icon="svg-spinners:ring-resize" />
+            ) : (
+              <Icon icon="tabler:send" />
+            )}
+          </button>
+        </form>
+      </div>
     </div>
   );
 };
@@ -222,7 +233,7 @@ const MessageList: React.FC<MessageListProps> = ({ messages, currentUserId }) =>
               <span>{msg.text}</span>
             </div>
             <span className={styles.message__time}>
-              {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              {new Date(msg.created_at.endsWith('Z') ? msg.created_at : msg.created_at + 'Z').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
             </span>
           </div>
         );

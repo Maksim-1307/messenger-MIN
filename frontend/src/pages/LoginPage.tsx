@@ -21,7 +21,7 @@ export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const from = (location.state as LocationState)?.from?.pathname || '/profile';
+  const from = (location.state as LocationState)?.from?.pathname || '/chats';
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();

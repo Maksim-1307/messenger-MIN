@@ -10,6 +10,7 @@
   --bg: #fafafa;
   --bg-secondary: #f0f0f0;
   --bg-transparent: rgba(0, 0, 0, 0.08);
+  --bg-transparent-accent: rgba(102, 122, 195, 0.4);
   --bg-input: #ffffff;
 
   /* Border colors */
@@ -53,6 +54,10 @@
   --radius-md: 8px;
   --radius-lg: 12px;
 
+  /* Layout */
+  --message-input-height: 45px;
+  --message-header-height: 45px;
+
   /* Transitions */
   --transition: all 0.2s ease;
 
@@ -82,6 +87,7 @@
     --bg: #070707;
     --bg-secondary: rgba(34, 36, 40);
     --bg-transparent: rgba(34, 36, 40, 0.5);
+    --bg-transparent-accent: rgba(127, 147, 220, 0.4);
     --bg-input: #000000;
     --border: #2e303a;
     --border-focus: rgba(127, 147, 220, 0.5);
@@ -186,4 +192,14 @@ button {
 
 input, textarea {
   font-family: var(--sans);
+}
+
+.glass {
+  background: var(--bg-transparent);
+  backdrop-filter: blur(20px);
+}
+
+.accent-glass {
+  background: var(--bg-transparent-accent);
+  backdrop-filter: blur(20px);
 }

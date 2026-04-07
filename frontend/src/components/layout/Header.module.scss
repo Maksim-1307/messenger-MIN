@@ -2,6 +2,10 @@
   padding: var(--spacing-md) var(--spacing-lg);
   border-bottom: 1px solid var(--border);
   background: var(--bg);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
 
   &__container {
     max-width: 1126px;

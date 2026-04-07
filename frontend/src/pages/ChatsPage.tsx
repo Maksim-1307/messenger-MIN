@@ -9,7 +9,8 @@ import styles from './ChatsPage.module.scss';
 import { Icon } from '@iconify/react';
 
 function formatRelativeTime(dateStr: string): string {
-  const date = new Date(dateStr);
+  // Append 'Z' to treat the timestamp as UTC since backend stores naive timestamps in UTC
+  const date = new Date(dateStr.endsWith('Z') ? dateStr : dateStr + 'Z');
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMin = Math.floor(diffMs / 60000);
@@ -83,7 +84,13 @@ const ChatsPageContent: React.FC<ChatsPageContentProps> = ({ token, navigate }) 
 
   return (
     <div className={styles.chats}>
-      <h1 className={styles.chats__title}>Chats</h1>
+      <div className={styles['chats__header']}>
+        <h1 className={styles.chats__title}>Chats</h1>
+        <div className={styles.chats__summarize}>
+          <span>Summarize</span>
+          <Icon icon="mdi:stars"/>
+        </div>
+      </div>
       <div className={styles.chats__list}>
         {chats.map((chat) => (
           <ChatItem key={chat.id} chat={chat} onClick={() => {

@@ -5,7 +5,7 @@ import { AuthError } from './services/authService.js';
 import { authenticate, requireAdmin } from './middleware/auth.js';
 import { avatarUpload, setFilePermissions, getAvatarUrl } from './middleware/upload.js';
 import { uploadAvatar, removeAvatar, getAvatar } from './controllers/avatarController.js';
-import { updateUserProfile, getPublicProfile } from './controllers/userController.js';
+import { updateUserProfile, getPublicProfile, getPublicProfileByUsername } from './controllers/userController.js';
 import { getChats } from './controllers/chatController.js';
 import { getMessages, sendMessage } from './controllers/messageController.js';
 import { userRepository } from './repositories/UserRepository.js';
@@ -92,6 +92,7 @@ app.get('/api/users/me', authenticate, async (req: Request, res: Response) => {
 
 // Public: user profile
 app.get('/api/users/:userId', getPublicProfile);
+app.get('/api/find/:username', getPublicProfileByUsername);
 
 app.put('/api/users/me', authenticate, updateUserProfile);
 

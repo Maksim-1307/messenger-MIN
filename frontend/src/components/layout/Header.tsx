@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, replace, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import styles from './Header.module.scss';
 import { Icon } from '@iconify/react';
@@ -6,6 +6,7 @@ import { Icon } from '@iconify/react';
 export const Header: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -20,7 +21,7 @@ export const Header: React.FC = () => {
         <nav className={styles.header__nav}>
           {isAuthenticated ? (
             <>
-              <Icon icon="jam:write" width={20} />
+              <Icon onClick={() => navigate('/search', { replace: true })} icon="jam:write" width={20} />
             </>
           ) : (
             <>

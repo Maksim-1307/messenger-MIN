@@ -69,7 +69,7 @@ export const UserProfilePage: React.FC = () => {
             <img src={toFullUrl(profile.avatarUrl) ?? ''} alt={`${profile.displayName}'s avatar`} />
           ) : (
             <div className={styles.profile__avatarPlaceholder}>
-              <Icon icon="tabler:user" width={48} />
+              <span>{profile.displayName?.charAt(0).toUpperCase()}</span>
             </div>
           )}
         </div>

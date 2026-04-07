@@ -20,6 +20,10 @@ export const userApi = {
   getUserProfile: (token: string, userId: string) => {
     return api.get<UserProfileResponse>(`/api/users/${userId}`, token);
   },
+
+  findUserByUsername: (token: string, username: string) => {
+    return api.get<UserProfileResponse>(`/api/find/${encodeURIComponent(username)}`, token);
+  },
 };
 
 export { toFullUrl };

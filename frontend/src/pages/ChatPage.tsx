@@ -187,11 +187,13 @@ const ChatPageContent: React.FC<ChatPageContentProps> = ({ token, targetUserId, 
             className={`${styles['chat__user-avatar']} glass`}
             onClick={() => navigate(`/chats/${targetUserId}/info`)}
           >
-            {targetAvatarUrl ? (
-              <img src={toFullUrl(targetAvatarUrl) ?? ''} alt="Avatar" />
-            ) : (
-              <Icon icon="tabler:user" width={20} />
-            )}
+            <div className={styles.chatItem__avatar}>
+              {targetAvatarUrl ? (
+                <img src={toFullUrl(targetAvatarUrl) ?? ''} alt="Avatar" />
+              ) : (
+                <span>{targetUsername?.charAt(0).toUpperCase()}</span>
+              )}
+          </div>
           </button>
         </div>
 

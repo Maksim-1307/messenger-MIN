@@ -7,6 +7,7 @@ import { ProfilePage } from './pages/ProfilePage';
 import { ChatsPage } from './pages/ChatsPage';
 import { ChatPage } from './pages/ChatPage';
 import { UserProfilePage } from './pages/UserProfilePage';
+import { SearchPage } from './pages/SearchPage';
 import { useAuth } from './hooks/useAuth';
 
 function App() {
@@ -37,6 +38,10 @@ function App() {
         <Route
           path="settings"
           element={<HomePage />}
+        />
+        <Route
+          path="/search"
+          element={<SearchPage />}
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

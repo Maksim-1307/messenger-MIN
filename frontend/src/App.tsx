@@ -4,6 +4,10 @@ import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { ChatsPage } from './pages/ChatsPage';
+import { ChatPage } from './pages/ChatPage';
+import { UserProfilePage } from './pages/UserProfilePage';
+import { SearchPage } from './pages/SearchPage';
 import { useAuth } from './hooks/useAuth';
 
 function App() {
@@ -15,11 +19,11 @@ function App() {
         <Route index element={<HomePage />} />
         <Route
           path="login"
-          element={isAuthenticated ? <Navigate to="/profile" replace /> : <LoginPage />}
+          element={isAuthenticated ? <Navigate to="/chats" replace /> : <LoginPage />}
         />
         <Route
           path="register"
-          element={isAuthenticated ? <Navigate to="/profile" replace /> : <RegisterPage />}
+          element={isAuthenticated ? <Navigate to="/chats" replace /> : <RegisterPage />}
         />
         <Route
           path="profile"
@@ -27,14 +31,28 @@ function App() {
             <ProfilePage />
           }
         />
-        <Route 
+        <Route
           path="chats"
-          element={
-            <HomePage />
-          }
+          element={<ChatsPage />}
+        />
+        <Route
+          path="settings"
+          element={<HomePage />}
+        />
+        <Route
+          path="/search"
+          element={<SearchPage />}
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
+      <Route
+        path="/chat/:userId"
+        element={<ChatPage />}
+      />
+      <Route
+        path="/chats/:userId/info"
+        element={<UserProfilePage />}
+      />
     </Routes>
   );
 }

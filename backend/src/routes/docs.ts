@@ -111,6 +111,46 @@ router.post('/api/auth/login', (_req, _res, _next) => {});
 
 /**
  * @openapi
+ * /api/users/{userId}:
+ *   get:
+ *     tags: [Users]
+ *     summary: Get public user profile
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *     responses:
+ *       200:
+ *         description: User profile
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 user:
+ *                   $ref: '#/components/schemas/PublicUserProfile'
+ *       400:
+ *         description: Invalid user ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get('/api/users/:userId', (_req, _res, _next) => {});
+
+/**
+ * @openapi
  * /api/users/me:
  *   get:
  *     tags: [Users]
@@ -378,5 +418,192 @@ router.get('/health', (_req, _res, _next) => {});
  *                   format: date-time
  */
 router.post('/api/echo', (_req, _res, _next) => {});
+
+// ========================
+// Chats
+// ========================
+
+/**
+ * @openapi
+ * /api/chats:
+ *   get:
+ *     tags: [Chats]
+ *     summary: Get chats for the authenticated user
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 50
+ *           maximum: 200
+ *         description: Number of chats to return
+ *       - in: query
+ *         name: from
+ *         schema:
+ *           type: string
+ *         description: Cursor (chat id or ISO timestamp) to start from
+ *       - in: query
+ *         name: to
+ *         schema:
+ *           type: string
+ *         description: Cursor (chat id or ISO timestamp) to end at
+ *     responses:
+ *       200:
+ *         description: List of chats with enrichment data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 chats:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/EnrichedChat'
+ *                 pagination:
+ *                   $ref: '#/components/schemas/Pagination'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get('/api/chats', (_req, _res, _next) => {});
+
+// ========================
+// Messages
+// ========================
+
+/**
+ * @openapi
+ * /api/messages/{userId}:
+ *   get:
+ *     tags: [Messages]
+ *     summary: Get messages between current user and target user
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Target user ID
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 50
+ *           maximum: 200
+ *         description: Number of messages to return
+ *       - in: query
+ *         name: from
+ *         schema:
+ *           type: string
+ *         description: Cursor (message id or ISO timestamp) to start from
+ *       - in: query
+ *         name: to
+ *         schema:
+ *           type: string
+ *         description: Cursor (message id or ISO timestamp) to end at
+ *     responses:
+ *       200:
+ *         description: List of messages
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 messages:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Message'
+ *                 pagination:
+ *                   $ref: '#/components/schemas/Pagination'
+ *       400:
+ *         description: Invalid user ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get('/api/messages/:userId', (_req, _res, _next) => {});
+
+/**
+ * @openapi
+ * /api/messages/{userId}:
+ *   post:
+ *     tags: [Messages]
+ *     summary: Send a message to a user
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Target user ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [text]
+ *             properties:
+ *               text:
+ *                 type: string
+ *                 example: "Hello!"
+ *     responses:
+ *       201:
+ *         description: Message sent
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/Message'
+ *       400:
+ *         description: Invalid request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.post('/api/messages/:userId', (_req, _res, _next) => {});
 
 export default router;

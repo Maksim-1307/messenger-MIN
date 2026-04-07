@@ -3,6 +3,62 @@ import { userRepository } from '../repositories/UserRepository.js';
 import { userProfileRepository } from '../repositories/UserProfileRepository.js';
 import { getAvatarUrl } from '../middleware/upload.js';
 
+/**
+ * GET /api/users/:userId — Public user profile
+ */
+export const getPublicProfile = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const targetUserId = parseInt(req.params.userId);
+
+    if (isNaN(targetUserId) || targetUserId <= 0) {
+      res.status(400).json({ message: 'Invalid user ID' });
+      return;
+    }
+
+    const profile = await userRepository.findPublicProfile(targetUserId);
+
+    if (!profile) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+
+    res.status(200).json({
+      message: 'User profile',
+      user: profile,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * GET /api/find/:username — Public user profile by username
+ */
+export const getPublicProfileByUsername = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const username: string = req.params.username as string;
+
+    if (!username || username.trim() === '') {
+      res.status(400).json({ message: 'Username is required' });
+      return;
+    }
+
+    const profile = await userRepository.findPublicProfileByUsername(username);
+
+    if (!profile) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+
+    res.status(200).json({
+      message: 'User profile',
+      user: profile,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const updateUserProfile = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const userId = req.user!.userId;

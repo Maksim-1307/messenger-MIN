@@ -46,7 +46,7 @@ export const RegisterPage: React.FC = () => {
 
     try {
       await register({ username, password, displayName, avatar });
-      navigate('/profile', { replace: true });
+      navigate('/chats', { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');
     } finally {

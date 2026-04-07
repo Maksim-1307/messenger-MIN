@@ -29,7 +29,7 @@ export const HomePage: React.FC = () => {
         A modern messaging platform for seamless communication
       </p>
       <div className={styles.home__actions}>
-        <button onClick={() => navigate('/profile')} className={styles.home__action}>
+        <button onClick={() => navigate('/chats', { replace: true })} className={styles.home__action}>
           Start chatting
           <Icon icon="tabler:arrow-right" />
         </button>

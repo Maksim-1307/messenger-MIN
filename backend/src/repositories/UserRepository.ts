@@ -1,5 +1,6 @@
 import { db } from '../database/DatabaseClient.js';
 import bcrypt from 'bcryptjs';
+import { getAvatarUrl } from '../middleware/upload.js';
 
 export interface UserRow {
   id: string;
@@ -84,6 +85,94 @@ export class UserRepository {
       'UPDATE users SET display_name = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
       [displayName, id]
     );
+  }
+
+  /**
+   * Get public user profile by username (no sensitive fields)
+   */
+  async findPublicProfileByUsername(username: string): Promise<{
+    id: string;
+    username: string;
+    displayName: string | null;
+    role: string;
+    email: string | null;
+    description: string | null;
+    avatarUrl: string | null;
+    createdAt: string;
+  } | null> {
+    const result = await db.query(
+      `SELECT
+        u.id::text,
+        u.username,
+        u.display_name,
+        u.role,
+        up.email,
+        up.description,
+        up.avatar_path,
+        up.created_at::text
+       FROM users u
+       LEFT JOIN user_profiles up ON u.id = up.user_id
+       WHERE u.username = $1`,
+      [username]
+    );
+
+    if (result.rows.length === 0) return null;
+
+    const row = result.rows[0];
+    return {
+      id: row.id,
+      username: row.username,
+      displayName: row.display_name,
+      role: row.role,
+      email: row.email,
+      description: row.description,
+      avatarUrl: row.avatar_path ? getAvatarUrl(row.avatar_path) : null,
+      createdAt: row.created_at,
+    };
+  }
+
+  /**
+   * Get public user profile (no sensitive fields)
+   */
+  async findPublicProfile(id: number): Promise<{
+    id: string;
+    username: string;
+    displayName: string | null;
+    role: string;
+    email: string | null;
+    description: string | null;
+    avatarUrl: string | null;
+    createdAt: string;
+  } | null> {
+    const result = await db.query(
+      `SELECT
+        u.id::text,
+        u.username,
+        u.display_name,
+        u.role,
+        up.email,
+        up.description,
+        up.avatar_path,
+        up.created_at::text
+       FROM users u
+       LEFT JOIN user_profiles up ON u.id = up.user_id
+       WHERE u.id = $1`,
+      [id]
+    );
+
+    if (result.rows.length === 0) return null;
+
+    const row = result.rows[0];
+    return {
+      id: row.id,
+      username: row.username,
+      displayName: row.display_name,
+      role: row.role,
+      email: row.email,
+      description: row.description,
+      avatarUrl: row.avatar_path ? getAvatarUrl(row.avatar_path) : null,
+      createdAt: row.created_at,
+    };
   }
 }
 

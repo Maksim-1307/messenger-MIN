@@ -11,10 +11,15 @@ export const Layout: React.FC = () => {
         <Outlet />
       </main>
       <BottomNavigation items={[
+        // {
+        //   icon: 'fluent:settings-32-regular',
+        //   path: '/settings',
+        //   label: 'Settings'
+        // },
         {
-          icon: 'fluent:settings-32-regular',
-          path: '/settings',
-          label: 'Settings'
+          icon: 'ph:magnifying-glass',
+          path: '/search',
+          label: 'Search'
         },
         {
           icon: 'ph:chats-circle',

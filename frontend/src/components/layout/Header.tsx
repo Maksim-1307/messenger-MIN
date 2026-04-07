@@ -1,17 +1,19 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, replace, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import styles from './Header.module.scss';
+import { Icon } from '@iconify/react';
 
 export const Header: React.FC = () => {
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const isActive = (path: string) => location.pathname === path;
 
   return (
     <header className={styles.header}>
       <div className={styles.header__container}>
-        <Link to="/" className={styles.header__logo}>
+        <Link to="/chats" className={styles.header__logo}>
           <img src="/favicon.png" alt="Logo" />
           <span>MIN</span>
         </Link>
@@ -19,15 +21,7 @@ export const Header: React.FC = () => {
         <nav className={styles.header__nav}>
           {isAuthenticated ? (
             <>
-              <Link
-                to="/profile"
-                className={`${styles.header__link} ${isActive('/profile') ? styles['header__link--active'] : ''}`}
-              >
-                Profile
-              </Link>
-              <button onClick={logout} className={styles.header__logout}>
-                Logout
-              </button>
+              <Icon onClick={() => navigate('/search', { replace: true })} icon="jam:write" width={20} />
             </>
           ) : (
             <>

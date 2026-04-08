@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { chatApi } from '../api/chat';
 import { userApi, toFullUrl } from '../api/users';
+import { socketService } from '../services/socketService';
 import type { Message } from '../types/chat';
 import styles from './ChatPage.module.scss';
 import { Icon } from '@iconify/react';
@@ -33,7 +34,7 @@ interface ChatPageContentProps {
 }
 
 const ChatPageContent: React.FC<ChatPageContentProps> = ({ token, targetUserId, navigate }) => {
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, sendMessageViaSocket } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -121,6 +122,27 @@ const ChatPageContent: React.FC<ChatPageContentProps> = ({ token, targetUserId, 
     fetchUserProfile();
   }, [token, targetUserId]);
 
+  // Listen for incoming messages via socket
+  useEffect(() => {
+    const handleSocketMessage = (message: Message) => {
+      // Only add messages from the current conversation
+      if (
+        (message.sender_id === String(targetUserId) && message.recipient_id === String(currentUser?.id)) ||
+        (message.sender_id === String(currentUser?.id) && message.recipient_id === String(targetUserId))
+      ) {
+        console.log('Adding message to list:', message); // called 2 times
+        setMessages((prev) => [...prev, message]);
+        setTimeout(() => scrollToBottom(true), 50);
+      }
+    };
+
+    const unsubscribe = socketService.onMessage(handleSocketMessage);
+
+    return () => {
+      unsubscribe();
+    };
+  }, [targetUserId, currentUser, scrollToBottom]);
+
   // Initial load
   useEffect(() => {
     loadMessages(false);
@@ -146,7 +168,7 @@ const ChatPageContent: React.FC<ChatPageContentProps> = ({ token, targetUserId, 
     return () => observer.disconnect();
   }, [hasMore, loadMessages]);
 
-  // Send message
+  // Send message via WebSocket (with REST fallback)
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     const text = inputText.trim();
@@ -154,11 +176,16 @@ const ChatPageContent: React.FC<ChatPageContentProps> = ({ token, targetUserId, 
 
     setIsSending(true);
     try {
-      const response = await chatApi.sendMessage(token, targetUserId, text);
-      const newMsg = response.data;
-      if (newMsg) {
-        setMessages((prev) => [...prev, newMsg]);
+      let newMsg: Message;
+      try {
+        // Try sending via WebSocket first
+        newMsg = await sendMessageViaSocket(targetUserId, text);
+      } catch {
+        // Fallback to REST if socket fails
+        const response = await chatApi.sendMessage(token, targetUserId, text);
+        newMsg = response.data;
       }
+      setMessages((prev) => [...prev, newMsg]);
       setInputText('');
       setTimeout(() => scrollToBottom(true), 50);
     } catch (err) {
@@ -187,13 +214,11 @@ const ChatPageContent: React.FC<ChatPageContentProps> = ({ token, targetUserId, 
             className={`${styles['chat__user-avatar']} glass`}
             onClick={() => navigate(`/chats/${targetUserId}/info`)}
           >
-            <div className={styles.chatItem__avatar}>
               {targetAvatarUrl ? (
                 <img src={toFullUrl(targetAvatarUrl) ?? ''} alt="Avatar" />
               ) : (
                 <span>{targetUsername?.charAt(0).toUpperCase()}</span>
               )}
-          </div>
           </button>
         </div>
 

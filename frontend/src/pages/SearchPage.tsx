@@ -14,7 +14,6 @@ export const SearchPage: React.FC = () => {
   const [result, setResult] = useState<UserProfile | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [notFound, setNotFound] = useState(false);
-  const [hasSearched, setHasSearched] = useState(false);
 
   // Auth check
   useEffect(() => {
@@ -28,13 +27,11 @@ export const SearchPage: React.FC = () => {
     if (!token || !username.trim()) {
       setResult(null);
       setNotFound(false);
-      setHasSearched(false);
       return;
     }
 
     setIsSearching(true);
     setNotFound(false);
-    setHasSearched(true);
 
     try {
       const response = await userApi.findUserByUsername(token, username.trim());

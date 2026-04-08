@@ -32,11 +32,13 @@ export interface AuthContextType {
   isAuthenticated: boolean;
   isAdmin: boolean;
   isLoading: boolean;
+  isSocketConnected: boolean;
   requireAuth: (redirectPath?: string) => boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (credentials: RegisterCredentials) => Promise<void>;
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
+  sendMessageViaSocket: (recipientId: number, text: string) => Promise<import('./chat').Message>;
 }
 
 export interface UserProfileUpdate {

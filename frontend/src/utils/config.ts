@@ -12,7 +12,7 @@ const getEnv = (key: string, defaultValue?: string): string => {
 export const config = {
   // URLs (for backend communication)
   apiUrl: getEnv('VITE_API_URL', '/app-api'),
-  socketUrl: getEnv('VITE_SOCKET_URL', '/app-socket'),
+  socketUrl: getEnv('VITE_SOCKET_URL', '/app-socket/ws'),
 
   // Recaptcha
   recaptchaSiteKey: getEnv('VITE_RECAPTCHA_SITE_KEY', ''),

@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 import { useNavigate } from 'react-router-dom';
 import type { User, LoginCredentials, RegisterCredentials, AuthContextType } from '../types/auth';
 import { api } from '../utils/api';
+import { socketService } from '../services/socketService';
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
@@ -36,8 +37,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(getUserFromStorage);
   const [token, setToken] = useState<string | null>(getTokenFromStorage);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSocketConnected, setIsSocketConnected] = useState(false);
 
   const navigate = useNavigate();
+
+  // Connect/disconnect socket when auth state changes
+  useEffect(() => {
+    if (!token) {
+      socketService.disconnect();
+      setIsSocketConnected(false);
+      return;
+    }
+
+    socketService.connect(token);
+    setIsSocketConnected(true);
+  }, [token]);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -102,9 +116,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [login]);
 
   const logout = useCallback((): void => {
+    socketService.disconnect();
     clearAuthData();
     setUser(null);
     setToken(null);
+    setIsSocketConnected(false);
     navigate('/login', { replace: true });
   }, []);
 
@@ -115,15 +131,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem(USER_KEY, JSON.stringify(updatedUser));
     }
   }, [user]);
-
-  const isTokenValid = useCallback((token: string): boolean => {
-    try {
-      const decoded = JSON.parse(atob(token.split('.')[1]));
-      return decoded.exp > Date.now() / 1000;
-    } catch {
-      return false;
-    }
-  }, []);
 
   const requireAuth = useCallback((redirectPath: string = '/login'): boolean => {
     if (!token) {
@@ -139,11 +146,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isAuthenticated: !!user && !!token,
     isAdmin: user?.role === 'admin' || false,
     isLoading,
+    isSocketConnected,
     requireAuth,
     login,
     register,
     logout,
     updateUser,
+    sendMessageViaSocket: (recipientId: number, text: string) =>
+      socketService.sendMessage(recipientId, text),
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

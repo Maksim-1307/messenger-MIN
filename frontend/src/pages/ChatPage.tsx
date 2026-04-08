@@ -85,7 +85,25 @@ const ChatPageContent: React.FC<ChatPageContentProps> = ({ token, targetUserId, 
           setTargetUsername(`User ${targetUserId}`);
         }
 
-        setMessages((prev) => (append ? [...prev, ...newMsgs] : newMsgs));
+        setMessages((prev) => {
+          // 1. Собираем все сообщения в один массив
+          // Если append=true (грузим старые), новые из API ставим В НАЧАЛО
+          const combined = append ? [...newMsgs, ...prev] : [...prev, ...newMsgs];
+
+          // 2. Дедуплицируем через Map по id
+          const map = new Map();
+          combined.forEach((m) => {
+            if (m && m.id) {
+              map.set(m.id, m);
+            }
+          });
+
+          // 3. Возвращаем отсортированный массив (по времени), 
+          // чтобы порядок не развалился при перемешивании старых и новых
+          return Array.from(map.values()).sort(
+            (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+          );
+        });
 
         if (newMsgs.length > 0) {
           setCursor(newMsgs[0].id);
@@ -125,13 +143,16 @@ const ChatPageContent: React.FC<ChatPageContentProps> = ({ token, targetUserId, 
   // Listen for incoming messages via socket
   useEffect(() => {
     const handleSocketMessage = (message: Message) => {
-      // Only add messages from the current conversation
       if (
         (message.sender_id === String(targetUserId) && message.recipient_id === String(currentUser?.id)) ||
         (message.sender_id === String(currentUser?.id) && message.recipient_id === String(targetUserId))
       ) {
-        console.log('Adding message to list:', message); // called 2 times
-        setMessages((prev) => [...prev, message]);
+        setMessages((prev) => {
+          const seen = new Map<string, Message>();
+          prev.forEach((m) => seen.set(m.id, m));
+          if (!seen.has(message.id)) seen.set(message.id, message);
+          return [...seen.values()];
+        });
         setTimeout(() => scrollToBottom(true), 50);
       }
     };
@@ -176,16 +197,18 @@ const ChatPageContent: React.FC<ChatPageContentProps> = ({ token, targetUserId, 
 
     setIsSending(true);
     try {
-      let newMsg: Message;
       try {
-        // Try sending via WebSocket first
-        newMsg = await sendMessageViaSocket(targetUserId, text);
+        // Send via WebSocket — the socket event handler will add the message
+        // to state when the backend emits it back
+        await sendMessageViaSocket(targetUserId, text);
       } catch {
-        // Fallback to REST if socket fails
+        // Fallback to REST — manually add the message
         const response = await chatApi.sendMessage(token, targetUserId, text);
-        newMsg = response.data;
+        const newMsg = response.data;
+        if (newMsg) {
+          setMessages((prev) => [...prev, newMsg]);
+        }
       }
-      setMessages((prev) => [...prev, newMsg]);
       setInputText('');
       setTimeout(() => scrollToBottom(true), 50);
     } catch (err) {
@@ -273,13 +296,16 @@ interface MessageListProps {
 }
 
 const MessageList: React.FC<MessageListProps> = ({ messages, currentUserId }) => {
+  // Deduplicate at render level as final safety net
+  const uniqueMessages = messages;//[...new Map(messages.map((m) => [m.id, m])).values()];
+
   return (
     <div className={styles.messageList}>
-      {messages.map((msg) => {
+      {uniqueMessages.map((msg) => {
         const isMine = msg.sender_id === String(currentUserId);
         return (
           <div
-            key={msg.id}
+            key={msg.id} 
             className={`${styles.message} ${isMine ? styles['message--mine'] : styles['message--theirs']}`}
           >
             <div className={styles.message__bubble}>

@@ -127,9 +127,9 @@ export class SocketService {
           });
 
           // Also emit to sender (for confirmation with the saved message)
-          // this.io?.to(`user:${userId}`).emit('receive_message', {
-          //   ...message,
-          // });
+          this.io?.to(`user:${userId}`).emit('receive_message', {
+            ...message,
+          });
 
           // Update the chat's last_message_id
           await chatRepository.updateLastMessage(parseInt(chat.id), parseInt(message.id));

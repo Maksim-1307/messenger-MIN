@@ -82,7 +82,8 @@ const ChatPageContent: React.FC<ChatPageContentProps> = ({ token, targetUserId, 
 
         // Determine the other user's display name from the first message
         if (!targetUsername && newMsgs.length > 0 && currentUser) {
-          setTargetUsername(`User ${targetUserId}`);
+          console.log('Target username is not set, setting it to User ' + targetUserId);
+          setTargetUsername((prev) => !prev ? `User ${targetUserId}` : prev);
         }
 
         setMessages((prev) => {
@@ -132,6 +133,7 @@ const ChatPageContent: React.FC<ChatPageContentProps> = ({ token, targetUserId, 
         const response = await userApi.getUserProfile(token, String(targetUserId));
         setTargetUsername(response.user.displayName);
         setTargetAvatarUrl(response.user.avatarUrl);
+        console.log('Target username set to ' + response.user.displayName);
       } catch (err) {
         console.error('Failed to load user profile:', err);
       }

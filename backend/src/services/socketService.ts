@@ -156,23 +156,16 @@ export class SocketService {
             return;
           }
 
-          // Stream the summary to frontend
-          await agentService.streamSummary(
-            chatData,
-            // onChunk - stream each part as it arrives
-            (chunk: string) => {
-              socket.emit('agent:partial_response', { textPart: chunk });
-            },
-            // onComplete
-            () => {
-              socket.emit('agent:finished');
-            },
-            // onError
-            (error: Error) => {
-              console.error('[Socket] Agent summarization error:', error);
-              socket.emit('agent:error', { message: error.message || 'Ошибка при работе с ИИ' });
-            },
-          );
+          // Build the prompt
+          const prompt = agentService.buildSummaryPrompt(chatData);
+
+          // Stream with backpressure: each chunk is emitted and awaited
+          await agentService.streamSummary(prompt, async (content: string) => {
+            // Each emit happens in its own await step, preventing batching
+            socket.emit('agent:partial_response', { textPart: content });
+          });
+
+          socket.emit('agent:finished');
         } catch (error) {
           console.error('[Socket] Error in agent:summarize:', error);
           socket.emit('agent:error', { message: 'Ошибка при работе с ИИ' });
@@ -218,31 +211,20 @@ export class SocketService {
             return;
           }
 
-          // Stream the answer
-          const { streamText } = await import('ai');
-          const { createOpenAI } = await import('@ai-sdk/openai');
-          
-          const openrouter = createOpenAI({
-            baseURL: 'https://openrouter.ai/api/v1',
-            apiKey: config.llm.apiKey,
-          });
-
-          const result = await streamText({
-            model: openrouter(config.llm.model),
-            prompt: `Ты — ассистент, помогающий разобраться в переписках. Ответь на вопрос пользователя, основываясь на предоставленном контексте переписки.
+          // Build prompt for question answering
+          const prompt = `Ты — ассистент, помогающий разобраться в переписках. Ответь на вопрос пользователя, основываясь на предоставленном контексте переписки.
 
 Вопрос: ${question}
 
 Контекст переписки:${context}
 
-Ответ:`,
-            temperature: 0.3,
-            maxTokens: 500,
-          });
+Ответ:`;
 
-          for await (const textPart of result.textStream) {
-            socket.emit('agent:partial_response', { textPart });
-          }
+          // Reuse agentService streaming with backpressure
+          await agentService.streamSummary(prompt, async (content: string) => {
+            await new Promise<void>((resolve) => process.nextTick(resolve));
+            socket.emit('agent:partial_response', { textPart: content });
+          });
 
           socket.emit('agent:finished');
         } catch (error) {

@@ -1,5 +1,3 @@
-import { createOpenAI } from '@ai-sdk/openai';
-import { streamText } from 'ai';
 import { config } from '../utils/config.js';
 import { messageRepository, buildChatKey } from '../repositories/MessageRepository.js';
 import { chatRepository } from '../repositories/ChatRepository.js';
@@ -21,12 +19,6 @@ interface SummarizeResult {
   summaries: ChatSummary[];
   fullSummary: string;
 }
-
-// Initialize OpenRouter client
-const openrouter = createOpenAI({
-  baseURL: 'https://openrouter.ai/api/v1',
-  apiKey: config.llm.apiKey,
-});
 
 export class AgentService {
   /**
@@ -98,25 +90,16 @@ export class AgentService {
   }
 
   /**
-   * Summarize chat messages using AI
-   * Returns per-chat summaries and a full summary
+   * Build the prompt text for summarization
    */
-  async summarizeChats(
+  buildSummaryPrompt(
     chatData: Array<{
       chatId: string;
       chatKey: string;
       messages: Array<{ sender_id: string; text: string; created_at: string }>;
       otherUser?: { id: string; username: string; displayName: string | null };
     }>,
-  ): Promise<SummarizeResult> {
-    if (chatData.length === 0) {
-      return {
-        summaries: [],
-        fullSummary: 'Нет сообщений для суммаризации.',
-      };
-    }
-
-    // Build context for AI
+  ): string {
     let context = '';
     for (const chat of chatData) {
       const chatLabel = chat.otherUser
@@ -130,7 +113,7 @@ export class AgentService {
       context += messagesText;
     }
 
-    const prompt = `Ты — ассистент для суммаризации переписок в мессенджере.
+    return `Ты — ассистент для суммаризации переписок в мессенджере.
 Твоя задача — кратко пересказать суть каждой переписки, выделив самое важное.
 
 КРИТИЧЕСКИЕ ТРЕБОВАНИЯ:
@@ -150,35 +133,116 @@ export class AgentService {
 Контекст переписки:${context}
 
 Суммаризируй переписки:`;
+  }
 
-    try {
-      const result = await streamText({
-        model: openrouter(config.llm.model),
-        prompt,
+  /**
+   * Fetch OpenRouter summary and return the full text (non-streaming)
+   */
+  async fetchSummary(prompt: string): Promise<string> {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${config.llm.apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'http://localhost:5173',
+        'X-Title': 'Messenger MIN',
+      },
+      body: JSON.stringify({
+        model: config.llm.model,
+        messages: [
+          { role: 'user', content: prompt },
+        ],
+        stream: false,
         temperature: 0.3,
-        maxTokens: 1000,
-      });
+        max_tokens: 1000,
+      }),
+    });
 
-      // Collect full text
-      let fullText = '';
-      const chunks: string[] = [];
-
-      for await (const textPart of result.textStream) {
-        fullText += textPart;
-        chunks.push(textPart);
-      }
-
-      // Parse per-chat summaries from the full text
-      const summaries = this.parseChatSummaries(fullText, chatData);
-
-      return {
-        summaries,
-        fullSummary: fullText,
-      };
-    } catch (error) {
-      console.error('[AgentService] Error during summarization:', error);
-      throw new Error('Ошибка при работе с ИИ');
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`OpenRouter API error: ${response.status} ${errorText}`);
     }
+
+    const data = await response.json();
+    return data.choices?.[0]?.message?.content || '';
+  }
+
+  /**
+   * Fetch OpenRouter summary with streaming, calling onChunk for each token
+   * Returns the full text when complete
+   */
+  async streamSummary(
+    prompt: string,
+    onChunk: (text: string) => Promise<void>,
+  ): Promise<string> {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${config.llm.apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'http://localhost:5173',
+        'X-Title': 'Messenger MIN',
+      },
+      body: JSON.stringify({
+        model: config.llm.model,
+        messages: [
+          { role: 'user', content: prompt },
+        ],
+        stream: true,
+        temperature: 0.3,
+        max_tokens: 1000,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`OpenRouter API error: ${response.status} ${errorText}`);
+    }
+
+    const reader = response.body?.getReader();
+    if (!reader) {
+      throw new Error('No response body');
+    }
+
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let fullText = '';
+    let chunkCount = 0;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed === 'data: [DONE]') continue;
+        if (!trimmed.startsWith('data: ')) continue;
+
+        try {
+          const json = JSON.parse(trimmed.slice(6));
+          const content = json.choices?.[0]?.delta?.content;
+          if (content) {
+            fullText += content;
+            chunkCount++;
+            if (chunkCount % 10 === 1) {
+              console.log(`[AgentService] SSE chunk #${chunkCount}: "${content.substring(0, 30)}..."`);
+            }
+            // Use nextTick to ensure each chunk is emitted in its own event loop cycle
+            await new Promise<void>((resolve) => process.nextTick(resolve));
+            await onChunk(content);
+          }
+        } catch {
+          // Skip malformed JSON
+        }
+      }
+    }
+
+    console.log(`[AgentService] Streaming complete. Total chunks: ${chunkCount}`);
+    return fullText;
   }
 
   /**
@@ -232,81 +296,6 @@ export class AgentService {
     return summaries;
   }
 
-  /**
-   * Stream chat summary to client via callback
-   * Callback receives chunks as they arrive
-   */
-  async streamSummary(
-    chatData: Array<{
-      chatId: string;
-      chatKey: string;
-      messages: Array<{ sender_id: string; text: string; created_at: string }>;
-      otherUser?: { id: string; username: string; displayName: string | null };
-    }>,
-    onChunk: (chunk: string) => void,
-    onComplete: () => void,
-    onError: (error: Error) => void,
-  ): Promise<void> {
-    if (chatData.length === 0) {
-      onChunk('Нет сообщений для суммаризации.');
-      onComplete();
-      return;
-    }
-
-    // Build context for AI
-    let context = '';
-    for (const chat of chatData) {
-      const chatLabel = chat.otherUser
-        ? `Чат с ${chat.otherUser.displayName || chat.otherUser.username}`
-        : `Чат ${chat.chatId}`;
-
-      context += `\n\n=== ${chatLabel} ===\n`;
-      const messagesText = chat.messages
-        .map(m => `${m.sender_id}: ${m.text}`)
-        .join('\n');
-      context += messagesText;
-    }
-
-    const prompt = `Ты — ассистент для суммаризации переписок в мессенджере.
-Твоя задача — кратко пересказать суть каждой переписки, выделив самое важное.
-
-КРИТИЧЕСКИЕ ТРЕБОВАНИЯ:
-1. Ответ должен быть ОЧЕНЬ кратким (максимум 2-3 предложения на чат)
-2. Используй Markdown форматирование
-3. Раздели ответ по чатам, указав название каждого
-4. Выдели ключевые темы и решения
-5. Приоритет: сначала важные/срочные чаты
-
-Формат ответа:
-### [Название чата]
-- Краткая суть (1-2 предложения)
-- Ключевые моменты (если есть)
-
----
-
-Контекст переписки:${context}
-
-Суммаризируй переписки:`;
-
-    try {
-      const result = await streamText({
-        model: openrouter(config.llm.model),
-        prompt,
-        temperature: 0.3,
-        maxTokens: 1000,
-      });
-
-      // Stream chunks to client
-      for await (const textPart of result.textStream) {
-        onChunk(textPart);
-      }
-
-      onComplete();
-    } catch (error) {
-      console.error('[AgentService] Error during streaming summary:', error);
-      onError(error instanceof Error ? error : new Error('Ошибка при работе с ИИ'));
-    }
-  }
 }
 
 // Singleton instance

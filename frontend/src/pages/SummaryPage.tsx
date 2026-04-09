@@ -219,63 +219,69 @@ const SummaryPageContent: React.FC<SummaryPageContentProps> = ({
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <button className={styles.backButton} onClick={() => navigate('/chats')}>
+        <button className={`${styles.backButton} glass`} onClick={() => navigate('/chats')}>
           <Icon icon="mdi:arrow-left" width={20} />
         </button>
-        <h1 className={styles.title}>Суммаризация переписки</h1>
+        <h1 className={styles.title}>Chats Summary</h1>
       </div>
 
       <div className={styles.content}>
         {/* Summarize section */}
-        <div className={styles.section}>
-          <div className={styles.sectionHeader}>
-            <Icon icon="mdi:summarize" width={24} />
-            <h2>Обзор чатов</h2>
-          </div>
+        <div>
+          {(summary) ? (
+            <div className={styles.summary}>
+              <SimpleMarkdown text={summary} />
+            </div>
+          ) : (
+            <div className={styles.makeSummary}>
+              <div className={styles.section}>
+              <div className={styles.sectionHeader}>
+                <Icon icon="mdi:summarize" width={24} />
+                <h2>Chat Overview</h2>
+              </div>
+              <br />
+              <p><b>Warning:</b> Your messages will be sent to LLM. This does not guarantee privacy. It is not recommended to use this feature for sensitive information.</p>
+              <br />
+              <button
+                className={styles.summarizeButton}
+                onClick={handleSummarize}
+                disabled={isStreaming || isLoadingHistory}
+              >
+                {isStreaming ? (
+                  <>
+                    <Icon icon="mdi:loading" width={18} className={styles.spinner} />
+                    Generation...
+                  </>
+                ) : (
+                  <>
+                    <Icon icon="mdi:stars" width={18} />
+                    Summarize
+                  </>
+                )}
+              </button>
 
-          <button
-            className={styles.summarizeButton}
-            onClick={handleSummarize}
-            disabled={isStreaming || isLoadingHistory}
-          >
-            {isStreaming ? (
-              <>
-                <Icon icon="mdi:loading" width={18} className={styles.spinner} />
-                Генерация...
-              </>
-            ) : (
-              <>
-                <Icon icon="mdi:auto-fix" width={18} />
-                Суммаризировать
-              </>
-            )}
-          </button>
-
-          {isLoadingHistory && !summary && (
-            <div className={styles.loadingText}>Загрузка истории переписки...</div>
+              {isLoadingHistory && !summary && (
+                <div className={styles.loadingText}>Chats history loading...</div>
+              )}
+              </div>
+            </div>
           )}
 
           {error && <div className={styles.error}>{error}</div>}
-
-          {summary && (
-            <div className={styles.summaryContent}>
-              <SimpleMarkdown text={summary} />
-            </div>
-          )}
         </div>
 
         {/* Question section */}
-        <div className={styles.section}>
-          <div className={styles.sectionHeader}>
-            <Icon icon="mdi:comment-question" width={24} />
-            <h2>Вопрос о переписке</h2>
+        <div className={styles.askQuestion}>
+          <div className={styles.askQuestion__header}>
+            <Icon icon="fluent:chat-bubbles-question-24-filled" width={24} />
+            <h2>Ask the Agent</h2>
           </div>
 
           <div className={styles.questionForm}>
             <input
               type="text"
               className={styles.questionInput}
-              placeholder="Задайте вопрос о переписке..."
+              placeholder="Ask a question about the chat..."
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               onKeyDown={(e) => {
@@ -298,12 +304,6 @@ const SummaryPageContent: React.FC<SummaryPageContentProps> = ({
               )}
             </button>
           </div>
-
-          {answer && (
-            <div className={styles.answerContent}>
-              <SimpleMarkdown text={answer} />
-            </div>
-          )}
         </div>
       </div>
     </div>

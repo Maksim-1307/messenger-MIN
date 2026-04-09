@@ -73,6 +73,7 @@ class SocketService {
 
     // Agent events
     this.socket.on('agent:partial_response', (data: { textPart: string }) => {
+      console.log('Partial response:', data.textPart);
       this.agentChunkHandlers.forEach((handler) => handler(data.textPart));
     });
 

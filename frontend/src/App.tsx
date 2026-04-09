@@ -44,6 +44,10 @@ function App() {
           path="/search"
           element={<SearchPage />}
         />
+        <Route
+          path="/summary"
+          element={<SummaryPage />}
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
       <Route
@@ -53,10 +57,6 @@ function App() {
       <Route
         path="/chats/:userId/info"
         element={<UserProfilePage />}
-      />
-      <Route
-        path="/summary"
-        element={<SummaryPage />}
       />
     </Routes>
   );

@@ -86,10 +86,12 @@ const ChatsPageContent: React.FC<ChatsPageContentProps> = ({ token, navigate }) 
     <div className={styles.chats}>
       <div className={styles['chats__header']}>
         <h1 className={styles.chats__title}>Chats</h1>
-        <div className={styles.chats__summarize}>
+        <Link
+          to='/summary' 
+          className={styles.chats__summarize}>
           <span>Summarize</span>
           <Icon icon="mdi:stars"/>
-        </div>
+        </Link>
       </div>
       <div className={styles.chats__list}>
         {chats.map((chat) => (

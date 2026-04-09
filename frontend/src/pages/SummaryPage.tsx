@@ -24,6 +24,7 @@ export const SummaryPage: React.FC = () => {
   const [isAnswerStreaming, setIsAnswerStreaming] = useState(false);
   const [chatHistory, setChatHistory] = useState<ChatHistoryEntry[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [askedQuestion, setAskedQuestion] = useState('');
 
   const summaryRef = useRef('');
   const answerRef = useRef('');
@@ -58,6 +59,8 @@ export const SummaryPage: React.FC = () => {
       setChatHistory={setChatHistory}
       isLoadingHistory={isLoadingHistory}
       setIsLoadingHistory={setIsLoadingHistory}
+      askedQuestion={askedQuestion}
+      setAskedQuestion={setAskedQuestion}
       summaryRef={summaryRef}
       answerRef={answerRef}
       navigate={navigate}
@@ -84,6 +87,8 @@ interface SummaryPageContentProps {
   setChatHistory: (h: ChatHistoryEntry[]) => void;
   isLoadingHistory: boolean;
   setIsLoadingHistory: (v: boolean) => void;
+  askedQuestion: string;
+  setAskedQuestion: (q: string) => void;
   summaryRef: React.MutableRefObject<string>;
   answerRef: React.MutableRefObject<string>;
   navigate: ReturnType<typeof useNavigate>;
@@ -108,6 +113,8 @@ const SummaryPageContent: React.FC<SummaryPageContentProps> = ({
   setChatHistory,
   isLoadingHistory,
   setIsLoadingHistory,
+  askedQuestion,
+  setAskedQuestion,
   summaryRef,
   answerRef,
   navigate,
@@ -170,10 +177,41 @@ const SummaryPageContent: React.FC<SummaryPageContentProps> = ({
     };
   }, [setSummary, setError, setIsStreaming]);
 
-  // Load history on mount
+  // Set up question listeners (persistent, not tied to component lifecycle)
+  const questionListenersRef = useRef({ chunk: null as (() => void) | null, error: null as (() => void) | null, finish: null as (() => void) | null });
+
+  const registerQuestionListeners = useCallback(() => {
+    questionListenersRef.current.chunk = socketService.onQuestionChunk((chunk: string) => {
+      answerRef.current += chunk;
+      setAnswer(answerRef.current);
+    });
+
+    questionListenersRef.current.error = socketService.onQuestionError((err: { message: string }) => {
+      setError(err.message || 'Ошибка при работе с ИИ');
+      setIsAnswerStreaming(false);
+    });
+
+    questionListenersRef.current.finish = socketService.onQuestionFinish(() => {
+      setIsAnswerStreaming(false);
+    });
+  }, [setAnswer, setError, setIsAnswerStreaming]);
+
+  const unregisterQuestionListeners = useCallback(() => {
+    questionListenersRef.current.chunk?.();
+    questionListenersRef.current.error?.();
+    questionListenersRef.current.finish?.();
+    questionListenersRef.current = { chunk: null, error: null, finish: null };
+  }, []);
+
+  // Load history on mount and register question listeners
   useEffect(() => {
     loadChatHistory();
-  }, [loadChatHistory]);
+    registerQuestionListeners();
+
+    return () => {
+      unregisterQuestionListeners();
+    };
+  }, [loadChatHistory, registerQuestionListeners, unregisterQuestionListeners]);
 
   const handleSummarize = () => {
     if (isStreaming) return;
@@ -189,28 +227,16 @@ const SummaryPageContent: React.FC<SummaryPageContentProps> = ({
   const handleAskQuestion = () => {
     if (!question.trim() || isAnswerStreaming) return;
 
+    setAskedQuestion(question.trim());
+
+    // Clear any previous listeners and set up fresh ones
+    unregisterQuestionListeners();
+    registerQuestionListeners();
+
     answerRef.current = '';
     setAnswer('');
     setError(null);
     setIsAnswerStreaming(true);
-
-    // Set up answer listeners
-    const unsubscribeChunk = socketService.onAgentChunk((chunk: string) => {
-      answerRef.current += chunk;
-      setAnswer(answerRef.current);
-    });
-
-    const unsubscribeError = socketService.onAgentError((err: { message: string }) => {
-      setError(err.message || 'Ошибка при работе с ИИ');
-      setIsAnswerStreaming(false);
-    });
-
-    const unsubscribeFinish = socketService.onAgentFinish(() => {
-      setIsAnswerStreaming(false);
-      unsubscribeChunk();
-      unsubscribeError();
-      unsubscribeFinish();
-    });
 
     socketService.askQuestion(question.trim(), chatHistory.length > 0 ? chatHistory : undefined);
     setQuestion('');
@@ -269,6 +295,13 @@ const SummaryPageContent: React.FC<SummaryPageContentProps> = ({
 
           {error && <div className={styles.error}>{error}</div>}
         </div>
+
+        {answer && (
+          <div className={styles.answerContent}>
+            <div className={styles.answerContent__question}>{askedQuestion}</div>
+            <SimpleMarkdown text={answer} />
+          </div>
+        )}
 
         {/* Question section */}
         <div className={styles.askQuestion}>

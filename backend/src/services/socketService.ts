@@ -223,13 +223,13 @@ export class SocketService {
           // Reuse agentService streaming with backpressure
           await agentService.streamSummary(prompt, async (content: string) => {
             await new Promise<void>((resolve) => process.nextTick(resolve));
-            socket.emit('agent:partial_response', { textPart: content });
+            socket.emit('agent:question_response', { textPart: content });
           });
 
-          socket.emit('agent:finished');
+          socket.emit('agent:question_finished');
         } catch (error) {
           console.error('[Socket] Error in agent:question:', error);
-          socket.emit('agent:error', { message: 'Ошибка при работе с ИИ' });
+          socket.emit('agent:question_error', { message: 'Ошибка при работе с ИИ' });
         }
       });
 

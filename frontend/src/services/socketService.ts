@@ -28,6 +28,9 @@ class SocketService {
   private agentChunkHandlers: Set<AgentChunkHandler> = new Set();
   private agentErrorHandlers: Set<AgentErrorHandler> = new Set();
   private agentFinishHandlers: Set<(() => void)> = new Set();
+  private questionChunkHandlers: Set<AgentChunkHandler> = new Set();
+  private questionErrorHandlers: Set<AgentErrorHandler> = new Set();
+  private questionFinishHandlers: Set<(() => void)> = new Set();
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
   private reconnectDelay = 1000;
@@ -83,6 +86,19 @@ class SocketService {
 
     this.socket.on('agent:error', (error: { message: string }) => {
       this.agentErrorHandlers.forEach((handler) => handler(error));
+    });
+
+    // Question events (separate from summary events)
+    this.socket.on('agent:question_response', (data: { textPart: string }) => {
+      this.questionChunkHandlers.forEach((handler) => handler(data.textPart));
+    });
+
+    this.socket.on('agent:question_finished', () => {
+      this.questionFinishHandlers.forEach((handler) => handler());
+    });
+
+    this.socket.on('agent:question_error', (error: { message: string }) => {
+      this.questionErrorHandlers.forEach((handler) => handler(error));
     });
   }
 
@@ -167,6 +183,28 @@ class SocketService {
     this.agentErrorHandlers.add(handler);
     return () => {
       this.agentErrorHandlers.delete(handler);
+    };
+  }
+
+  // Question event handlers
+  onQuestionChunk(handler: AgentChunkHandler): () => void {
+    this.questionChunkHandlers.add(handler);
+    return () => {
+      this.questionChunkHandlers.delete(handler);
+    };
+  }
+
+  onQuestionFinish(handler: () => void): () => void {
+    this.questionFinishHandlers.add(handler);
+    return () => {
+      this.questionFinishHandlers.delete(handler);
+    };
+  }
+
+  onQuestionError(handler: AgentErrorHandler): () => void {
+    this.questionErrorHandlers.add(handler);
+    return () => {
+      this.questionErrorHandlers.delete(handler);
     };
   }
 }

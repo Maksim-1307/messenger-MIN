@@ -140,9 +140,21 @@
 .answerContent {
   margin-top: 1.5rem;
   padding: 1rem;
-  background: var(--bg-tertiary, #252525);
   border-radius: 8px;
-  border: 1px solid var(--border-color, #333);
+}
+
+.answerContent {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  &__question {
+    background-color: #6c5ce7;
+    color: var(--text-white);
+    padding: var(--spacing-md);
+    border-radius: 15px 15px 3px 15px;
+    max-width: 70%;
+    margin-bottom: 5px;
+  }
 }
 
 .questionForm {

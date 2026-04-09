@@ -1,0 +1,265 @@
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  min-height: 100vh;
+  background: var(--bg-primary, #0f0f0f);
+  color: var(--text-primary, #e0e0e0);
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  font-size: 1.2rem;
+  color: var(--text-secondary, #888);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+
+  .backButton {
+    background: transparent;
+    border: none;
+    color: var(--text-primary, #e0e0e0);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 8px;
+    transition: background 0.2s;
+
+    &:hover {
+      background: var(--bg-secondary, #1a1a1a);
+    }
+  }
+
+  .title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin: 0;
+  }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.section {
+  background: var(--bg-secondary, #1a1a1a);
+  border-radius: 12px;
+  padding: 1.5rem;
+
+  .sectionHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+
+    h2 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin: 0;
+    }
+  }
+}
+
+.summarizeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.875rem 1.5rem;
+  background: linear-gradient(135deg, var(--accent-primary, #6c5ce7), var(--accent-secondary, #a29bfe));
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+
+  &:hover:not(:disabled) {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.loadingText {
+  text-align: center;
+  padding: 1rem;
+  color: var(--text-secondary, #888);
+  font-size: 0.95rem;
+}
+
+.error {
+  background: rgba(255, 71, 87, 0.1);
+  border: 1px solid rgba(255, 71, 87, 0.3);
+  color: #ff4757;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+  font-size: 0.95rem;
+}
+
+.summaryContent,
+.answerContent {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: var(--bg-tertiary, #252525);
+  border-radius: 8px;
+  border: 1px solid var(--border-color, #333);
+}
+
+.questionForm {
+  display: flex;
+  gap: 0.75rem;
+
+  .questionInput {
+    flex: 1;
+    padding: 0.875rem 1rem;
+    background: var(--bg-tertiary, #252525);
+    border: 1px solid var(--border-color, #333);
+    border-radius: 8px;
+    color: var(--text-primary, #e0e0e0);
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+
+    &:focus {
+      outline: none;
+      border-color: var(--accent-primary, #6c5ce7);
+    }
+
+    &::placeholder {
+      color: var(--text-secondary, #666);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+    }
+  }
+
+  .askButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.875rem 1.25rem;
+    background: var(--accent-primary, #6c5ce7);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+
+    &:hover:not(:disabled) {
+      opacity: 0.9;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Markdown styles
+.markdown {
+  .heading1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin: 1rem 0 0.5rem;
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+
+  .heading2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin: 0.875rem 0 0.5rem;
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+
+  .heading3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0.75rem 0 0.5rem;
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+
+  .paragraph {
+    margin: 0.5rem 0;
+    line-height: 1.6;
+  }
+
+  .br {
+    height: 0.5rem;
+  }
+
+  .hr {
+    border: none;
+    border-top: 1px solid var(--border-color, #333);
+    margin: 1rem 0;
+  }
+
+  .list {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+
+    li {
+      margin: 0.25rem 0;
+      line-height: 1.6;
+    }
+  }
+
+  .bold {
+    font-weight: 700;
+  }
+
+  .italic {
+    font-style: italic;
+  }
+
+  .code {
+    background: var(--bg-primary, #0f0f0f);
+    padding: 0.125rem 0.375rem;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    color: var(--accent-secondary, #a29bfe);
+  }
+}

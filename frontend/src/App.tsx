@@ -8,6 +8,7 @@ import { ChatsPage } from './pages/ChatsPage';
 import { ChatPage } from './pages/ChatPage';
 import { UserProfilePage } from './pages/UserProfilePage';
 import { SearchPage } from './pages/SearchPage';
+import { SummaryPage } from './pages/SummaryPage';
 import { useAuth } from './hooks/useAuth';
 
 function App() {
@@ -52,6 +53,10 @@ function App() {
       <Route
         path="/chats/:userId/info"
         element={<UserProfilePage />}
+      />
+      <Route
+        path="/summary"
+        element={<SummaryPage />}
       />
     </Routes>
   );

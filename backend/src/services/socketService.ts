@@ -4,6 +4,7 @@ import { config } from '../utils/config.js';
 import { messageRepository, buildChatKey } from '../repositories/MessageRepository.js';
 import { chatRepository } from '../repositories/ChatRepository.js';
 import { userRepository } from '../repositories/UserRepository.js';
+import { agentService } from '../services/agentService.js';
 
 interface SocketJWTPayload {
   userId: string;
@@ -138,6 +139,115 @@ export class SocketService {
         } catch (error) {
           console.error('Error sending message via socket:', error);
           callback({ error: 'Failed to send message' });
+        }
+      });
+
+      // Handle AI agent summarization request
+      socket.on('agent:summarize', async () => {
+        try {
+          const senderId = parseInt(userId);
+
+          // Get recent chat messages (last 10 messages from last 5 chats)
+          const chatData = await agentService.getRecentChatsMessages(senderId, 5, 10);
+
+          if (chatData.length === 0) {
+            socket.emit('agent:partial_response', { textPart: 'Нет сообщений для суммаризации.' });
+            socket.emit('agent:finished');
+            return;
+          }
+
+          // Stream the summary to frontend
+          await agentService.streamSummary(
+            chatData,
+            // onChunk - stream each part as it arrives
+            (chunk: string) => {
+              socket.emit('agent:partial_response', { textPart: chunk });
+            },
+            // onComplete
+            () => {
+              socket.emit('agent:finished');
+            },
+            // onError
+            (error: Error) => {
+              console.error('[Socket] Agent summarization error:', error);
+              socket.emit('agent:error', { message: error.message || 'Ошибка при работе с ИИ' });
+            },
+          );
+        } catch (error) {
+          console.error('[Socket] Error in agent:summarize:', error);
+          socket.emit('agent:error', { message: 'Ошибка при работе с ИИ' });
+        }
+      });
+
+      // Handle follow-up questions about summaries
+      // Frontend can send the full history context if needed
+      socket.on('agent:question', async (data: { question: string; chatHistory?: any[] }) => {
+        try {
+          const senderId = parseInt(userId);
+          const question = data.question?.trim();
+
+          if (!question) {
+            socket.emit('agent:error', { message: 'Вопрос не может быть пустым' });
+            return;
+          }
+
+          // If frontend provides chat history, use it directly
+          // Otherwise, fetch recent chats
+          let context = '';
+          
+          if (data.chatHistory && data.chatHistory.length > 0) {
+            // Use provided history from frontend
+            context = data.chatHistory
+              .map((msg: any) => `${msg.sender}: ${msg.text}`)
+              .join('\n');
+          } else {
+            // Fetch recent chats
+            const chatData = await agentService.getRecentChatsMessages(senderId, 5, 10);
+            for (const chat of chatData) {
+              const chatLabel = chat.otherUser
+                ? `Чат с ${chat.otherUser.displayName || chat.otherUser.username}`
+                : `Чат ${chat.chatId}`;
+              context += `\n\n=== ${chatLabel} ===\n`;
+              context += chat.messages.map(m => `${m.sender_id}: ${m.text}`).join('\n');
+            }
+          }
+
+          if (!context) {
+            socket.emit('agent:partial_response', { textPart: 'Нет контекста для ответа.' });
+            socket.emit('agent:finished');
+            return;
+          }
+
+          // Stream the answer
+          const { streamText } = await import('ai');
+          const { createOpenAI } = await import('@ai-sdk/openai');
+          
+          const openrouter = createOpenAI({
+            baseURL: 'https://openrouter.ai/api/v1',
+            apiKey: config.llm.apiKey,
+          });
+
+          const result = await streamText({
+            model: openrouter(config.llm.model),
+            prompt: `Ты — ассистент, помогающий разобраться в переписках. Ответь на вопрос пользователя, основываясь на предоставленном контексте переписки.
+
+Вопрос: ${question}
+
+Контекст переписки:${context}
+
+Ответ:`,
+            temperature: 0.3,
+            maxTokens: 500,
+          });
+
+          for await (const textPart of result.textStream) {
+            socket.emit('agent:partial_response', { textPart });
+          }
+
+          socket.emit('agent:finished');
+        } catch (error) {
+          console.error('[Socket] Error in agent:question:', error);
+          socket.emit('agent:error', { message: 'Ошибка при работе с ИИ' });
         }
       });
 

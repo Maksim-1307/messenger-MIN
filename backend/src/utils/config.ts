@@ -49,6 +49,12 @@ export const config = {
     secret: getEnv('JWT_SECRET', 'your-super-secret-jwt-key-change-in-production'),
   },
 
+  // LLM (OpenRouter)
+  llm: {
+    apiKey: getEnv('LLM_API_KEY', ''),
+    model: getEnv('LLM_MODEL', 'google/gemini-2.0-flash-001'),
+  },
+
   // URLs (for frontend communication)
   apiUrl: getEnv('API_URL', 'http://localhost:3000'),
   socketUrl: getEnv('SOCKET_URL', 'http://localhost:3000/ws'),

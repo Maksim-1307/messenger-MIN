@@ -222,3 +222,8 @@ export const WebPushProvider: React.FC<WebPushProviderProps> = ( { children } ) 
     </WebPushContext.Provider>;
 };
 
+export const useWebPush = () => {
+  const ctx = useContext(WebPushContext);
+  if (!ctx) throw new Error('useWebPush must be used within WebPushProvider');
+  return ctx;
+};

@@ -1,6 +1,5 @@
 import { api, toFullUrl } from '../utils/api';
-import type { 
-    PushSubscription,
+import type {
     SubscribeResponse,
     UnsubscribeResponse,
     VerifyResponse,

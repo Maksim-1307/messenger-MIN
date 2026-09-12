@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import styles from './HomePage.module.scss';
 import { Icon } from '@iconify/react';
+import { NotificationToggle } from '../components/NotificationToggle';
 
 export const HomePage: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -28,6 +29,7 @@ export const HomePage: React.FC = () => {
       <p className={styles.home__subtitle}>
         A modern messaging platform for seamless communication
       </p>
+      <NotificationToggle />
       <div className={styles.home__actions}>
         <button onClick={() => navigate('/chats', { replace: true })} className={styles.home__action}>
           Start chatting

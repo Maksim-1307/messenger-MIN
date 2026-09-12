@@ -12,6 +12,7 @@ import { userRepository } from './repositories/UserRepository.js';
 import { userProfileRepository } from './repositories/UserProfileRepository.js';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './utils/swagger.js';
+import { router as notificationsRouter } from './routes/notifications.js';
 
 const app = express();
 
@@ -123,6 +124,9 @@ app.post('/api/echo', (req: Request, res: Response) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+// Notifications routes
+app.use('/api/notifications', notificationsRouter);
 
 // Swagger documentation
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));

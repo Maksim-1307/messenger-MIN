@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './hooks/useAuth'
+import { WebPushProvider } from './hooks/useWebPush'
 import './index.css'
 import App from './App'
 
@@ -9,7 +10,9 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <App />
+        <WebPushProvider>
+          <App />
+        </WebPushProvider>
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>,
